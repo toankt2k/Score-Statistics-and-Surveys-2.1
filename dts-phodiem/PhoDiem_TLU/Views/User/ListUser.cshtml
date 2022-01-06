@@ -1,0 +1,213 @@
+﻿@model PhoDiem_TLU.ViewModels.UserViewModel
+@using PhoDiem_TLU.Commons;
+@using PhoDiem_TLU.ViewModels
+@{
+    ViewBag.Title = "ListUser";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var pager = new Pager();
+    int pageNo = 0;
+    if (ViewBag.Pager != null)
+    {
+        pager = ViewBag.Pager;
+        pageNo = pager.CurrentPage;
+    }
+}
+
+@section ScriptDropdown {
+    <script>
+        $(function () {
+            $('#multiDropdown').chosen(
+                {
+                    width: "100%"
+                }
+            );
+        })
+
+    </script>
+    <script src="~/Assets/js/User.js"></script>
+}
+
+<button type="button" class="btn btn-success" style="margin-bottom:10px;margin-top:10px">
+    @Html.ActionLink("Them moi", "Index", "", htmlAttributes: new { @style = "color:white" })
+</button>
+
+<button type="button" id="btn-delete-user" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal" style="margin-bottom:10px;margin-top:10px">
+    Xoa
+</button>
+
+
+<table id="tblId" class="table table-striped">
+    <tr>
+        <th style="font-size:16px">
+            Ho va ten
+        </th>
+        <th style="font-size:16px">
+            Ten dang nhap
+        </th>
+        <th style="font-size:16px">
+            Email
+        </th>
+        <th style="font-size:16px">
+            Ngay chinh sua
+        </th>
+        <th style="font-size:16px">
+            <span>Thao Tac</span>
+        </th>
+        <th>
+
+        </th>
+    </tr>
+
+    @foreach (var item in ViewBag.content)
+    {
+        <tr>
+
+            <td style="font-size:16px">
+                @item.displayName
+            </td>
+            <td style="font-size:16px">
+                @item.username
+            </td>
+            <td style="font-size:16px">
+                @item.email
+            </td>
+            <td style="font-size:16px">
+                @item.modifyDate
+            </td>
+            <td style="font-size:26px">
+                <div class="text-center">
+                    <a href="#" class="edit-user" data-id="@item.id"><i class="fas fa-edit" style="font-size:20px!important"></i></a>
+                    <input type="checkbox" class="ckbiduser" data-id="@item.id" />
+                </div>
+            </td>
+
+        </tr>
+    }
+
+</table>
+<div class="card-footer">
+    @if (pager.TotalPages > 0)
+    {
+        <ul class="pagination justify-content-end">
+
+            @if (pager.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("ListUser", "User", new { page = 1})">Fisrt</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("ListUser", "User", new { page = pager.CurrentPage - 1})">Previous</a>
+                </li>
+            }
+
+
+            @for (var pge = pager.StartPage; pge <= pager.EndPage; pge++)
+            {
+                <li class="page-item @(pge == pager.CurrentPage ? "active": "")">
+                    <a class="page-link" href="@Url.Action("ListUser", "User", new { page = pge })">@pge</a>
+                </li>
+            }
+
+            @if (pager.CurrentPage < pager.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("ListUser", "User", new { page = pager.CurrentPage +1})">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("ListUser", "User", new { page = pager.TotalPages})">Last</a>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Xoa nguoi dung</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h4> Ban co chac muon xoa nguoi dung nay ?</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Dong</button>
+                <button type="button" id="btn-confirm" class="btn btn-primary">Xac nhan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<!--<div class="modal fade" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Cap nhap thong tin</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inputEmail4">Ho va ten</label>
+                            <input type="text" class="form-control" id="fullname" value="">
+                        </div>
+                        <div class="col-md-10">
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputAddress">Email</label>
+                        <input type="text" class="form-control" id="email" value="">
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="active" value="">
+                            <label class="form-check-label" for="gridCheck">
+                                Kich hoat
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="inputState">Vai tro</label>
+                        <ul id="roles" style="width: 150px" class=" form-group">
+                        </ul>
+                        <div class="form-group">
+                            <label>Quyền</label>
+
+                        </div>
+                    </div>
+                    <div class="col-md-10">
+
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Dong</button>
+            </div>
+        </div>
+    </div>
+</div>-->
+<!-- Modal -->
+<div class="modal fade" id="myModal1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Xem và sửa bản ghi</h3>
+            </div>
+            <div class="modal-body" id="myModalBodyDiv1">
+
+
+            </div>
+        </div>
+
+    </div>
+
+</div>

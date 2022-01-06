@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\dts-phodiem",
+    "\\dts-phodiem\\PhoDiem_TLU",
+    "\\dts-phodiem\\PhoDiem_TLU\\Controllers",
+    "\\dts-phodiem\\PhoDiem_TLU\\Views",
+    "\\dts-phodiem\\PhoDiem_TLU\\Views\\Home",
+    "\\dts-phodiem\\PhoDiem_TLU\\Views\\Mark",
+    "\\dts-phodiem\\PhoDiem_TLU\\Views\\Semester",
+    "\\dts-phodiem\\PhoDiem_TLU\\Views\\User",
+    "\\dts-phodiem\\XLT_TLU.Models"
+  ],
+  "SelectedNode": "\\dts-phodiem\\PhoDiem_TLU\\DatabaseIO\\DBIO.cs",
+  "PreviewInSolutionExplorer": false
+}
