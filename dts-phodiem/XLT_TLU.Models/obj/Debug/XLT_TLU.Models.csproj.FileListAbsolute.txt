@@ -104,7 +104,6 @@ C:\project\TLU project\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Mode
 C:\project\TLU project\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\bin\EPPlus.xml
 C:\project\TLU project\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
 C:\project\TLU project\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\bin\Microsoft.IO.RecyclableMemoryStream.xml
-C:\project\TLU project\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\obj\Debug\XLT_TLU.Models.csproj.AssemblyReference.cache
 C:\project\TLU project\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\obj\Debug\XLT_TLU.Models.csproj.CoreCompileInputs.cache
 C:\project\TLU project\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\obj\Debug\XLT_TLU.Models.csproj.CopyComplete
 C:\project\TLU project\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\obj\Debug\XLT_TLU.Models.dll
