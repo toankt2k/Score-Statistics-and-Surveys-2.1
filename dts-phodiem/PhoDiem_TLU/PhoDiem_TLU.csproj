@@ -343,6 +343,7 @@
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\MarkController.cs" />
     <Compile Include="Controllers\SemesterController.cs" />
+    <Compile Include="Controllers\StatisticByYearController.cs" />
     <Compile Include="Controllers\StatisticsByCourseSubjectController.cs" />
     <Compile Include="Controllers\StatisticsController.cs" />
     <Compile Include="Controllers\UserController.cs" />
@@ -377,6 +378,7 @@
     <Content Include="Assets\css\style.css" />
     <Content Include="Assets\js\mark.js" />
     <Content Include="Assets\js\markbyteacher.js" />
+    <Content Include="Assets\js\statisticByYear.js" />
     <Content Include="Assets\js\uer-index.js" />
     <Content Include="Assets\js\User.js" />
     <Content Include="Content\adminlte\components\bootstrap-colorpicker\dist\css\bootstrap-colorpicker.css" />
@@ -9533,6 +9535,7 @@
     <Content Include="Views\User\Detail.cshtml" />
     <Content Include="Views\User\DetailAndEditUser.cshtml" />
     <Content Include="Views\Mark\MarkByTeacher.cshtml" />
+    <Content Include="Views\StatisticByYear\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -9540,6 +9543,7 @@
     <Folder Include="Content\plugins\codemirror\mode\r\" />
     <Folder Include="Models\" />
     <Folder Include="Views\ImportExport\" />
+    <Folder Include="Views\test\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XLT_TLU.Models\XLT_TLU.Models.csproj">
