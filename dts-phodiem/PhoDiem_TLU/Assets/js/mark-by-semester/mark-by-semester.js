@@ -40,12 +40,14 @@ $('.dropdown-container')
 
 function ql() {
     listClass = new Set();
+    $('.dropdown-container').find('.quantity').text('Chọn nhiều');
     value.type = "2";
     getClass(2);
 }
 function hp() {
     value.type = "1";
     listClass = new Set();
+    $('.dropdown-container').find('.quantity').text('Chọn nhiều');
     getClass(1);
 }
 function getClass(type) {
@@ -101,6 +103,21 @@ function getClass(type) {
     event.preventDefault(); // <- avoid reloading
 }
 
+function checkAll(res) {
+    let list = $("#listClass > li input");
+    if (!res.checked) {
+        listClass.clear();
+        list.prop('checked', false);
+    } else {
+        list.prop('checked', true);
+        listClass.clear();
+        list.toArray().forEach(val => {
+            listClass.add(val.id);
+        })
+    }
+    $('.dropdown-container').find('.quantity').text(listClass.size || 'Chọn nhiều');
+}
+
 function oncheck(checkbox) {
     if (checkbox.checked) {
         listClass.add(checkbox.id);
@@ -108,9 +125,8 @@ function oncheck(checkbox) {
     else {
         listClass.delete(checkbox.id);
     }
-    console.log(listClass)
     var container = $('.dropdown-container');
-    var numChecked = container.find('[type="checkbox"]:checked').length;
+    var numChecked = listClass.size;
     container.find('.quantity').text(numChecked || 'Chọn nhiều');
 }
 function showClass(show) {
