@@ -176,3 +176,4 @@ F:\TLU\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\obj\Debug\XLT
 F:\TLU\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\obj\Debug\XLT_TLU.Models.csproj.CopyComplete
 F:\TLU\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\obj\Debug\XLT_TLU.Models.dll
 F:\TLU\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\obj\Debug\XLT_TLU.Models.pdb
+C:\project\TLU project\Score-Statistics-and-Surveys-2.1\dts-phodiem\XLT_TLU.Models\obj\Debug\XLT_TLU.Models.csproj.AssemblyReference.cache
