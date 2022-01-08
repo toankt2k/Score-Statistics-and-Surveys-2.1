@@ -158,24 +158,23 @@ function change(res, type) {
         }
     }).done(function (response) {
         if (response.data != null) {
-            if (response.code == 200) {
+            if (response.code == 200 && response.data.length > 0) {
                 let data1 = response.data.map(Object.values);;
                 chart_data = response.chart_mark;
                 $("#table_id").DataTable().clear();
                 $("#table_id").DataTable().rows.add(data1);
                 $("#table_id").DataTable().draw();
                 $("#table_id>thead>tr .headTb").css('width', "10%");
-
-                $("#_loading").hide();
-                $("#main_content").show()
             }
             else {
-                alert(response.data);
+                alert(response.data || "Không có dữ liệu");
             }
         }
         else {
             alert("Kết nối thất bại!")
         }
+        $("#_loading").hide();
+        $("#main_content").show()
     });
     event.preventDefault(); // <- avoid reloading
 }
