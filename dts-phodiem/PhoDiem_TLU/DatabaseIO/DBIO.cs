@@ -1540,7 +1540,7 @@ namespace PhoDiem_TLU.DatabaseIO
                       join s2 in listStudent
                       on s1.id equals s2.id
                       let mark = s1.mark.Where(m => m.type == 2).FirstOrDefault()
-                      let markExam = s1.mark.Where(m => m.type == 2).FirstOrDefault()
+                      let markExam = s1.mark.Where(m => m.type == 3).FirstOrDefault()
                       select new MarkBySemester(
                          s2.className, s1.code, s1.name, s2.teacherName, s1.subject,
                          (double)(mark == null ? -1 : mark.mark == null ? -1 : mark.mark),
@@ -1637,7 +1637,7 @@ namespace PhoDiem_TLU.DatabaseIO
                            join s2 in listStudent
                            on s1.id equals s2.id
                            let mark = s1.mark.Where(m => m.type == 2).FirstOrDefault()
-                           let markExam = s1.mark.Where(m => m.type == 2).FirstOrDefault()
+                           let markExam = s1.mark.Where(m => m.type == 3).FirstOrDefault()
                            select new MarkBySemester(
                               s2.className, s1.code, s1.name, s2.teacherName, s1.subject,
                               (double)(mark == null ? -1 : mark.mark == null ? -1 : mark.mark),
