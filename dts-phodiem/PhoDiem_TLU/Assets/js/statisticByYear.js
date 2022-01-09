@@ -68,6 +68,7 @@ function getClass(type) {
             console.log(xhr);
             console.log(ajaxOptions);
             console.log(thrownError);
+            alert("Vui lòng kiểm tra lại các lựa chọn!")
         }
     }).done(function (response) {
         if (response != null) {
@@ -145,9 +146,11 @@ function change(res, type) {
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr);
             console.log(ajaxOptions);
+            alert('Chưa có dữ liệu');
         }
     }).done(function (response) {
         if (response.data != null) {
+            console.log(response.data);
             if (response.code == 200) {
                 let data1 = response.data.map(Object.values);;
                 chart_data = response.chart_mark;
@@ -161,7 +164,7 @@ function change(res, type) {
                 $("#main_content").show()
             }
             else {
-                alert(response.data);
+                alert(response.data);               
             }
         }
         else {
@@ -172,7 +175,7 @@ function change(res, type) {
 }
 
 function setSemester(res) {
-    value.semester = res.value;
+    value.semester = res.value;    
     setSemesterRegistorPeriod();
     unDisableButton();    
 }

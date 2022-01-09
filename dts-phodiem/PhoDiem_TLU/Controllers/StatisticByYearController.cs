@@ -22,13 +22,14 @@ namespace PhoDiem_TLU.Controllers
         {
             //if (Session[Constants.ROLE_EXAM_MANAGERMENT].ToString() == Constants.ROLE_EXAM_MANAGERMENT)
             //{
+            SelectList year = new SelectList((from sy in dbSet.tbl_shool_year select sy), "id", "year");
             SelectList semester = new SelectList((from s in dbSet.tbl_semester select s), "id", "semester_name");
             SelectList course_year = new SelectList((from c_y in dbSet.tbl_course_year select c_y), "id", "name");
             SelectList subject = new SelectList((from s in dbSet.tbl_subject select s), "id", "subject_name");
             SelectList semester_register_period = new SelectList((from s_r_p in dbSet.tbl_semester_register_period select s_r_p), "id", "name");
 
             //SelectList cateList = new SelectList(cate, "ID", "THELOAI_NAME");
-
+            ViewBag.year = year;
             ViewBag.semester = semester;
             ViewBag.course_year = course_year;
             ViewBag.subject = subject;
@@ -67,7 +68,7 @@ namespace PhoDiem_TLU.Controllers
                 return Json(new { code = 500, data = "Không có dữ liệu!!" }, JsonRequestBehavior.AllowGet);
             }
         }
-
+      
         public JsonResult getSemesterRegistorPeriod(string semesterId, string courseId)
         {
             long semester_id = 0;            

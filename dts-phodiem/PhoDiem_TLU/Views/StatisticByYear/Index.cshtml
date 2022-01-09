@@ -45,6 +45,7 @@
                             @Html.ValidationSummary(true)
                             <div class="row">
                                 @Html.ValidationSummary(true)
+
                                 <div class="col-md-2">
                                     @Html.DropDownList("hocKy", (IEnumerable<SelectListItem>)ViewBag.semester, "Năm học", new { @class = "form-control", onchange = "setSemester(this)", style = "display:initial;", required = (string)null })
                                 </div>
