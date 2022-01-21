@@ -5,7 +5,12 @@
       "ProjectGuid": "e5866e1a-35d2-4d9e-98a9-1d5a3c46a8b1",
       "DisplayName": "PhoDiem_TLU",
       "ColorIndex": 0
+    },
+    "21c64e1f-dde6-434d-b9d9-ae5f3d339e62": {
+      "ProjectGuid": "21c64e1f-dde6-434d-b9d9-ae5f3d339e62",
+      "DisplayName": "XLT_TLU.Models",
+      "ColorIndex": 1
     }
   },
-  "NextColorIndex": 1
+  "NextColorIndex": 2
 }

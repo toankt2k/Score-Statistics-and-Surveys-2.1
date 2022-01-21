@@ -1534,23 +1534,23 @@ namespace PhoDiem_TLU.DatabaseIO
                           teacherName = s5.display_name,
                           status = s4.exam_status_id,
                           className = s1.display_name
-                      }).ToList();
+                      }).Distinct().ToList();
 
             list_result = (from s1 in listMark2
-                      join s2 in listStudent
-                      on s1.id equals s2.id
-                      let mark = s1.mark.Where(m => m.type == 2).FirstOrDefault()
-                      let markExam = s1.mark.Where(m => m.type == 3).FirstOrDefault()
-                      select new MarkBySemester(
-                         s2.className, s1.code, s1.name, s2.teacherName, s1.subject,
-                         (double)(mark == null ? -1 : mark.mark == null ? -1 : mark.mark),
-                         (double)(markExam == null ? -1 : markExam.mark == null ? -1 : markExam.mark),
-                         (double)(s1.markFinal == null ? -1 : s1.markFinal == null ? -1 : s1.markFinal),
-                         (int)(s1.mark4 == null ? -1 : s1.mark4 == null ? 0 : s1.mark4),
-                         (double)(s1.mark4 == null ? -1 : s1.mark4 == null ? 0 : s1.mark4),
-                         s1.note
-                         )
-                      { status = (long)(s2.status == null ? 0 : s2.status) }
+                           join s2 in listStudent
+                           on s1.id equals s2.id
+                           let mark = s1.mark.Where(m => m.type == 2).FirstOrDefault()
+                           let markExam = s1.mark.Where(m => m.type == 3).FirstOrDefault()
+                           select new MarkBySemester(
+                              s2.className, s1.code, s1.name, s2.teacherName, s1.subject,
+                              (double)(mark == null ? -1 : mark.mark == null ? -1 : mark.mark),
+                              (double)(markExam == null ? -1 : markExam.mark == null ? -1 : markExam.mark),
+                              (double)(s1.markFinal == null ? -1 : s1.markFinal == null ? -1 : s1.markFinal),
+                              (int)(s1.mark4 == null ? -1 : s1.mark4 == null ? 0 : s1.mark4),
+                              (double)(s1.mark4 == null ? -1 : s1.mark4 == null ? 0 : s1.mark4),
+                              s1.note
+                              )
+                           { status = (long)(s2.status == null ? 0 : s2.status) }
                        ).ToList();
             var result = list_result.GroupBy(s => new {className = s.class_name, teacherName = s.teacher_name, subject = s.subject });
             
