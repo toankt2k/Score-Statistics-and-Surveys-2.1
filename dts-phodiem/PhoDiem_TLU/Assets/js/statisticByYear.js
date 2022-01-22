@@ -142,7 +142,7 @@ function change(res, type) {
         url: '/StatisticByYear/GetMark',
         dataType: "json",
         type: 'POST',
-        data: { listId: [...listClass], type: value.type, subject: value.subject, semester: value.semester },
+        data: { listId: [...listClass], type: value.type, subject: value.subject_id, year: value.schoolYear },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr);
             console.log(ajaxOptions);
@@ -293,8 +293,8 @@ function xuat() {
         url: "/StatisticByYear/ExportAll",
         data: {
             type: value.type,
-            subject: value.subject,
-            semester: value.semester,
+            subject: value.subject_id,
+            year: value.schoolYear,
             data: [...listClass]
         },
         error: function (a, b, c) {

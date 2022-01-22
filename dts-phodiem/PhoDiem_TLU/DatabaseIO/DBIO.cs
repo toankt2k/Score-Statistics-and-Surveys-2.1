@@ -1470,6 +1470,198 @@ namespace PhoDiem_TLU.DatabaseIO
             }
             return result;
         }
+
+        public IEnumerable<IGrouping<dynamic, MarkBySemester>> GetMarkByYear(List<string> listId, long subject_id, long year)
+        {
+            var subjectName = models.tbl_subject.Find(subject_id).subject_name;
+            var listSemester = (from s in models.tbl_semester 
+                               where s.school_year_id == year
+                               select s.id).ToList();
+
+            var list_result = new List<MarkBySemester>();
+
+            var listMark2 = (from s1 in models.tbl_student_subject_mark
+                             join s2 in models.tbl_student_mark
+                             on s1.id equals s2.student_subject_mark_id
+
+                             join s3 in models.tbl_student
+                             on s1.student_id equals s3.id
+
+                             join s5 in models.tbl_subject_exam
+                             on s2.subject_exam_id equals s5.id
+
+                             where s1.subject_id == subject_id
+                                      && listSemester.Contains((long)s1.semester_id)
+                             group new { mark = s2.mark, type = s5.subject_exam_type_id } by new
+                             {
+                                 id = s3.id,
+                                 code = s3.student_code,
+                                 markFinal = s1.mark,
+                                 mark4 = s1.mark4,
+                                 note = s1.note,
+                             } into g
+
+                             select new
+                             {
+                                 id = g.Key.id,
+                                 code = g.Key.code,
+                                 mark = g.ToList(),
+                                 markFinal = g.Key.markFinal,
+                                 mark4 = g.Key.mark4,
+                                 note = g.Key.note,
+                             }).ToList();
+            var listStudent = (from s1 in models.tbl_course_subject
+                               join s2 in models.tbl_student_course_subject
+                               on s1.id equals s2.course_subject_id
+
+                               join s3 in models.tbl_student
+                               on s2.student_id equals s3.id
+
+                               join s4 in models.tbl_student_semester_subject_exam_room
+                               on s2.id equals s4.student_course_subject_id
+
+                               join s5 in models.tbl_person
+                               on s1.teacher_id equals s5.id
+
+                               join s6 in models.tbl_person
+                               on s3.id equals s6.id
+
+                               where listId.Contains(s1.id.ToString())
+
+                               select new
+                               {
+                                   id = s3.id,
+                                   code = s3.student_code,
+                                   name = s6.display_name,
+                                   teacherName = s5.display_name,
+                                   status = s4.exam_status_id,
+                                   className = s1.display_name
+                               }).Distinct().ToList();
+
+            list_result = (from s1 in listStudent
+                           join s2 in listMark2
+                           on s1.id equals s2.id into joined
+                           from s2 in joined.DefaultIfEmpty()
+                           let mark = s2 == null ? null : s2.mark.Where(m => m.type == 2).FirstOrDefault()
+                           let markExam = s2 == null ? null : s2.mark.Where(m => m.type == 3).FirstOrDefault()
+                           select new MarkBySemester(
+                              s1.className, s1.code, s1.name, s1.teacherName, subjectName,
+                              (double)(mark == null ? -1 : mark.mark == null ? -1 : mark.mark),
+                              (double)(markExam == null ? -1 : markExam.mark == null ? -1 : markExam.mark),
+                              (double)(s2 == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal),
+                              (int)(s2 == null ? -1 : s2.mark4 == null ? -1 : s2.mark4 == null ? 0 : s2.mark4),
+                              (double)(s2 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4),
+                              s2 == null ? "" : s2.note
+                              )
+                           { status = (long)(s2 == null ? -1 : s1.status == null ? 0 : s1.status) }
+                       ).ToList();
+
+            var result = list_result.GroupBy(s => new { className = s.class_name, teacherName = s.teacher_name, subject = s.subject });
+
+            return result;
+        }
+
+        public IEnumerable<IGrouping<dynamic, MarkBySemester>> GetMarkByClassYear(List<string> listId, long subject_id, long year)
+        {
+            var subjectName = models.tbl_subject.Find(subject_id).subject_name;
+
+            var listSemester = (from s in models.tbl_semester
+                                where s.school_year_id == year
+                                select s.id).ToList();
+
+            var list_result = new List<MarkBySemester>();
+
+            var listMark2 = (from s1 in models.tbl_student_subject_mark
+                             join s2 in models.tbl_student_mark
+                             on s1.id equals s2.student_subject_mark_id
+
+                             join s3 in models.tbl_student
+                             on s1.student_id equals s3.id
+
+                             join s5 in models.tbl_subject_exam
+                             on s2.subject_exam_id equals s5.id
+
+                             where s1.subject_id == subject_id
+                                      && listSemester.Contains((long)s1.semester_id)
+                             group new { mark = s2.mark, type = s5.subject_exam_type_id } by new
+                             {
+                                 id = s3.id,
+                                 code = s3.student_code,
+                                 markFinal = s1.mark,
+                                 mark4 = s1.mark4,
+                                 note = s1.note,
+                             } into g
+
+                             select new
+                             {
+                                 id = g.Key.id,
+                                 code = g.Key.code,
+                                 mark = g.ToList(),
+                                 markFinal = g.Key.markFinal,
+                                 mark4 = g.Key.mark4,
+                                 note = g.Key.note,
+                             }).ToList();
+
+
+            var listStudent = (from s1 in models.tbl_enrollment_class
+                               join s2 in models.tbl_student
+                               on s1.id equals s2.class_id
+
+                               join s3 in models.tbl_student_course_subject
+                               on s2.id equals s3.student_id
+
+                               join s4 in models.tbl_course_subject
+                               on s3.course_subject_id equals s4.id
+
+                               join s5 in models.tbl_semester_subject
+                               on s4.semester_subject_id equals s5.id
+
+                               join s6 in models.tbl_person
+                               on s1.staff_id equals s6.id
+
+                               join s7 in models.tbl_student_semester_subject_exam_room
+                               on s3.id equals s7.student_course_subject_id
+
+                               join s8 in models.tbl_person
+                               on s2.id equals s8.id
+
+                               where listId.Contains(s1.id.ToString())
+                               && s5.subject_id == subject_id
+                               && listSemester.Contains((long)s5.semester_id)
+
+                               select new
+                               {
+                                   id = s2.id,
+                                   name = s8.display_name,
+                                   code = s2.student_code,
+                                   teacherName = s6.display_name,
+                                   status = s7.exam_status_id,
+                                   className = s1.className
+                               }).ToList();
+            list_result = (from s1 in listStudent
+                           join s2 in listMark2
+                           on s1.id equals s2.id into joined
+                           from s2 in joined.DefaultIfEmpty()
+                           let mark = s2 == null ? null : s2.mark.Where(m => m.type == 2).FirstOrDefault()
+                           let markExam = s2 == null ? null : s2.mark.Where(m => m.type == 3).FirstOrDefault()
+                           select new MarkBySemester(
+                              s1.className, s1.code, s1.name, s1.teacherName, subjectName,
+                              (double)(mark == null ? -1 : mark.mark == null ? -1 : mark.mark),
+                              (double)(markExam == null ? -1 : markExam.mark == null ? -1 : markExam.mark),
+                              (double)(s2 == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal),
+                              (int)(s2 == null ? -1 : s2.mark4 == null ? -1 : s2.mark4 == null ? 0 : s2.mark4),
+                              (double)(s2 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4),
+                              s2 == null ? "" : s2.note
+                              )
+                           { status = (long)(s2 == null ? -1 : s1.status == null ? 0 : s1.status) }
+                       ).ToList();
+
+            var result = list_result.GroupBy(s => new { className = s.class_name, teacherName = s.teacher_name, subject = s.subject });
+
+            return result;
+        }
+
+
         public IEnumerable<IGrouping<dynamic,MarkBySemester>> GetMarkBySemester(List<string> listId, long subject_id, long semester_id)
         {
             var subjectName = models.tbl_subject.Find(subject_id).subject_name;
