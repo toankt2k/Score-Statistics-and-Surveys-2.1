@@ -1472,8 +1472,10 @@ namespace PhoDiem_TLU.DatabaseIO
         }
         public IEnumerable<IGrouping<dynamic,MarkBySemester>> GetMarkBySemester(List<string> listId, long subject_id, long semester_id)
         {
-            var list_result = new List<MarkBySemester>();
+            var subjectName = models.tbl_subject.Find(subject_id).subject_name;
 
+            var list_result = new List<MarkBySemester>();
+            
             var listMark2 = (from s1 in models.tbl_student_subject_mark
                             join s2 in models.tbl_student_mark
                             on s1.id equals s2.student_subject_mark_id
@@ -1481,37 +1483,27 @@ namespace PhoDiem_TLU.DatabaseIO
                             join s3 in models.tbl_student
                             on s1.student_id equals s3.id
 
-                            join s4 in models.tbl_person
-                            on s3.id equals s4.id
-
                             join s5 in models.tbl_subject_exam
                             on s2.subject_exam_id equals s5.id
-
-                            join s6 in models.tbl_subject 
-                            on s1.subject_id equals s6.id
 
                             where s1.subject_id == subject_id
                                      && s1.semester_id == semester_id
                             group new {mark = s2.mark, type = s5.subject_exam_type_id} by new
                             {
                                 id = s3.id,
-                                name = s4.display_name,
                                 code = s3.student_code,
                                 markFinal = s1.mark,
                                 mark4 = s1.mark4,
                                 note = s1.note,
-                                subject = s6.subject_name
                             } into g
 
                             select new {
                                 id = g.Key.id,
-                                name = g.Key.name,
                                 code = g.Key.code,
                                 mark = g.ToList(),
                                 markFinal = g.Key.markFinal,
                                 mark4 = g.Key.mark4,
                                 note = g.Key.note,
-                                subject = g.Key.subject
                             }).ToList();
                 var listStudent = (from s1 in models.tbl_course_subject
                       join s2 in models.tbl_student_course_subject
@@ -1526,38 +1518,47 @@ namespace PhoDiem_TLU.DatabaseIO
                       join s5 in models.tbl_person
                       on s1.teacher_id equals s5.id
 
+                      join s6 in models.tbl_person
+                      on s3.id equals s6.id
+
                       where listId.Contains(s1.id.ToString())
 
                       select new
                       {
                           id = s3.id,
+                          code = s3.student_code,
+                          name = s6.display_name,
                           teacherName = s5.display_name,
                           status = s4.exam_status_id,
                           className = s1.display_name
                       }).Distinct().ToList();
 
-            list_result = (from s1 in listMark2
-                           join s2 in listStudent
-                           on s1.id equals s2.id
-                           let mark = s1.mark.Where(m => m.type == 2).FirstOrDefault()
-                           let markExam = s1.mark.Where(m => m.type == 3).FirstOrDefault()
-                           select new MarkBySemester(
-                              s2.className, s1.code, s1.name, s2.teacherName, s1.subject,
-                              (double)(mark == null ? -1 : mark.mark == null ? -1 : mark.mark),
-                              (double)(markExam == null ? -1 : markExam.mark == null ? -1 : markExam.mark),
-                              (double)(s1.markFinal == null ? -1 : s1.markFinal == null ? -1 : s1.markFinal),
-                              (int)(s1.mark4 == null ? -1 : s1.mark4 == null ? 0 : s1.mark4),
-                              (double)(s1.mark4 == null ? -1 : s1.mark4 == null ? 0 : s1.mark4),
-                              s1.note
-                              )
-                           { status = (long)(s2.status == null ? 0 : s2.status) }
+            list_result = (from s1 in listStudent
+                            join s2 in listMark2
+                            on s1.id equals s2.id into joined
+                            from s2 in joined.DefaultIfEmpty()
+                            let mark = s2 == null ? null : s2.mark.Where(m => m.type == 2).FirstOrDefault()
+                            let markExam = s2 == null ? null : s2.mark.Where(m => m.type == 3).FirstOrDefault()
+                            select new MarkBySemester(
+                               s1.className, s1.code, s1.name, s1.teacherName, subjectName,
+                               (double)(mark == null ? -1 : mark.mark == null ? -1 : mark.mark),
+                               (double)(markExam == null ? -1 : markExam.mark == null ? -1 : markExam.mark),
+                               (double)(s2==null?-1:s2.markFinal == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal),
+                               (int)(s2==null?-1:s2.mark4 == null ? -1 : s2.mark4 == null ? 0 : s2.mark4),
+                               (double)(s2 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4),
+                               s2==null?"":s2.note
+                               )
+                            { status = (long)(s2==null?-1:s1.status == null ? 0 : s1.status) }
                        ).ToList();
+
             var result = list_result.GroupBy(s => new {className = s.class_name, teacherName = s.teacher_name, subject = s.subject });
             
             return result;
         }
         public IEnumerable<IGrouping<dynamic, MarkBySemester>> GetMarkByClass(List<string> listId, long subject_id, long semester_id)
         {
+            var subjectName = models.tbl_subject.Find(subject_id).subject_name;
+
             var list_result = new List<MarkBySemester>();
 
             var listMark2 = (from s1 in models.tbl_student_subject_mark
@@ -1567,39 +1568,28 @@ namespace PhoDiem_TLU.DatabaseIO
                              join s3 in models.tbl_student
                              on s1.student_id equals s3.id
 
-                             join s4 in models.tbl_person
-                             on s3.id equals s4.id
-
                              join s5 in models.tbl_subject_exam
                              on s2.subject_exam_id equals s5.id
-
-                             join s6 in models.tbl_subject
-                             on s1.subject_id equals s6.id
-
 
                              where s1.subject_id == subject_id
                                       && s1.semester_id == semester_id
                              group new { mark = s2.mark, type = s5.subject_exam_type_id } by new
                              {
                                  id = s3.id,
-                                 name = s4.display_name,
                                  code = s3.student_code,
                                  markFinal = s1.mark,
                                  mark4 = s1.mark4,
                                  note = s1.note,
-                                 subject = s6.subject_name
                              } into g
 
                              select new
                              {
                                  id = g.Key.id,
-                                 name = g.Key.name,
                                  code = g.Key.code,
                                  mark = g.ToList(),
                                  markFinal = g.Key.markFinal,
                                  mark4 = g.Key.mark4,
                                  note = g.Key.note,
-                                 subject = g.Key.subject
                              }).ToList();
 
 
@@ -1622,6 +1612,9 @@ namespace PhoDiem_TLU.DatabaseIO
                                join s7 in models.tbl_student_semester_subject_exam_room
                                on s3.id equals s7.student_course_subject_id
 
+                               join s8 in models.tbl_person
+                               on s2.id equals s8.id
+
                                where listId.Contains(s1.id.ToString()) 
                                && s5.subject_id == subject_id
                                && s5.semester_id == semester_id
@@ -1629,109 +1622,30 @@ namespace PhoDiem_TLU.DatabaseIO
                                select new
                                {
                                    id = s2.id,
+                                   name = s8.display_name,
+                                   code = s2.student_code,
                                    teacherName = s6.display_name,
                                    status = s7.exam_status_id,
                                    className = s1.className
                                }).ToList();
-            list_result = (from s1 in listMark2
-                           join s2 in listStudent
-                           on s1.id equals s2.id
-                           let mark = s1.mark.Where(m => m.type == 2).FirstOrDefault()
-                           let markExam = s1.mark.Where(m => m.type == 3).FirstOrDefault()
+            list_result = (from s1 in listStudent
+                           join s2 in listMark2
+                           on s1.id equals s2.id into joined
+                           from s2 in joined.DefaultIfEmpty()
+                           let mark = s2 == null ? null : s2.mark.Where(m => m.type == 2).FirstOrDefault()
+                           let markExam = s2 == null ? null : s2.mark.Where(m => m.type == 3).FirstOrDefault()
                            select new MarkBySemester(
-                              s2.className, s1.code, s1.name, s2.teacherName, s1.subject,
+                              s1.className, s1.code, s1.name, s1.teacherName, subjectName,
                               (double)(mark == null ? -1 : mark.mark == null ? -1 : mark.mark),
                               (double)(markExam == null ? -1 : markExam.mark == null ? -1 : markExam.mark),
-                              (double)(s1.markFinal == null ? -1 : s1.markFinal == null ? -1 : s1.markFinal),
-                              (int)(s1.mark4 == null ? -1 : s1.mark4 == null ? 0 : s1.mark4),
-                              (double)(s1.mark4 == null ? -1 : s1.mark4 == null ? 0 : s1.mark4),
-                              s1.note
+                              (double)(s2 == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal),
+                              (int)(s2 == null ? -1 : s2.mark4 == null ? -1 : s2.mark4 == null ? 0 : s2.mark4),
+                              (double)(s2 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4),
+                              s2 == null ? "" : s2.note
                               )
-                           { status = (long)(s2.status == null ? 0 : s2.status) }
+                           { status = (long)(s2 == null ? -1 : s1.status == null ? 0 : s1.status) }
                        ).ToList();
-            #region cũ
-            //var listMark = (from s1 in models.tbl_enrollment_class
-            //                join s3 in models.tbl_student
-            //                on s1.id equals s3.class_id
 
-            //                join s2 in models.tbl_student_course_subject
-            //                on s3.id equals s2.student_id
-
-            //                join s4 in models.tbl_person
-            //                on s3.id equals s4.id
-
-            //                join s5 in models.tbl_student_subject_mark
-            //                on s3.id equals s5.student_id
-
-            //                join s6 in models.tbl_student_mark
-            //                on s5.id equals s6.student_subject_mark_id
-
-            //                join s7 in models.tbl_subject_exam
-            //                on s6.subject_exam_id equals s7.id
-
-            //                join s8 in models.tbl_student_semester_subject_exam_room
-            //                on s2.id equals s8.student_course_subject_id
-
-            //                join s9 in models.tbl_person
-            //                on s1.staff_id equals s9.id
-
-            //                join s10 in models.tbl_course_subject
-            //                on s2.course_subject_id equals s10.id
-
-            //                join s11 in models.tbl_semester_subject
-            //                on s10.semester_subject_id equals s11.id
-
-            //                join s12 in models.tbl_subject
-            //                on s11.subject_id equals s12.id
-            //                where s5.subject_id == subject_id
-            //                         && s5.semester_id == semester_id
-            //                         && s11.subject_id == subject_id 
-            //                         && s11.semester_id == semester_id
-            //                group new { mark = s6.mark, type = s7.subject_exam_type_id, status = s8.exam_status_id } by new
-            //                {
-            //                    idStudent = s3.id,
-            //                    code = s3.student_code,
-            //                    name = s4.display_name,
-            //                    markFinal = s5.mark,
-            //                    mark4 = s5.mark4,
-            //                    subject = s12.subject_name,
-            //                    teacherName = s9.display_name,
-            //                    classId = s1.id,
-            //                    className = s1.className,
-            //                    note = s5.note,
-            //                } into g
-            //                select new
-            //                {
-            //                    name = g.Key.name,
-            //                    code = g.Key.code,
-            //                    id = g.Key.idStudent,
-            //                    markFinal = g.Key.markFinal,
-            //                    mark4 = g.Key.mark4,
-            //                    subject = g.Key.subject,
-            //                    teacherName = g.Key.teacherName,
-            //                    className = g.Key.className,
-            //                    classId = g.Key.classId,
-            //                    note = g.Key.note,
-            //                    mark = g.ToList()
-            //                }).ToList();
-
-
-            //list_result = (from s in listMark
-            //               where (listId.Contains(s.classId.ToString()))
-            //               let mark = s.mark == null ? null : s.mark.Where(m => m.type == 2).FirstOrDefault()
-            //               let markExam = s.mark == null ? null : s.mark.Where(m => m.type == 3).FirstOrDefault()
-            //               select new MarkBySemester(
-            //                 s.className, s.code, s.name, s.teacherName, s.subject,
-            //                 (double)(mark == null ? -1 : mark.mark == null ? -1 : mark.mark),
-            //                 (double)(markExam == null ? -1 : markExam.mark == null ? -1 : markExam.mark),
-            //                 (double)(s.markFinal == null ? -1 : s.markFinal == null ? -1 : s.markFinal),
-            //                 (int)(s.mark4 == null ? -1 : s.mark4 == null ? 0 : s.mark4),
-            //                 (double)(s.mark4 == null ? -1 : s.mark4 == null ? 0 : s.mark4),
-            //                 s.note
-            //                 )
-            //               { status = markExam == null ? 3 : (long)(markExam.status == null ? 0 : markExam.status) }
-            //           ).ToList();
-            #endregion
             var result = list_result.GroupBy(s => new { className = s.class_name, teacherName = s.teacher_name, subject = s.subject });
 
             return result;
