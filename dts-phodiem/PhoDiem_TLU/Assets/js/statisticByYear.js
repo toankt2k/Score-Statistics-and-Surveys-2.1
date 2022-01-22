@@ -5,7 +5,7 @@
     $('#chart_final').hide();
     if (name != '') $(`#${name}`).show();
 }
-var value = { value: '', subject: '', semester: '', course: '', period: '' };
+var value = { value: '', subject: '', semester: '', course: '', period: '', schoolYear:'', courseYear:'', subject_id:'' };
 var listClass = new Set();
 var chart_data = {
     qt: [],
@@ -38,7 +38,7 @@ function unDisableButton() {
     document.getElementById('1000002').disabled = false
 }
 
-function ql() {
+function getListEnrollmentClass() {
     listClass = new Set();
     value.type = "2";
     getClass(2);
@@ -46,7 +46,7 @@ function ql() {
     document.getElementById('1000001').disabled = false
     
 }
-function hp() {
+function getListCourseSubject() {
     value.type = "1";
     listClass = new Set();
     getClass(1);
@@ -68,7 +68,7 @@ function getClass(type) {
             console.log(xhr);
             console.log(ajaxOptions);
             console.log(thrownError);
-            alert("Vui lòng kiểm tra lại các lựa chọn!")
+            //alert("Vui lòng kiểm tra lại các lựa chọn!")
         }
     }).done(function (response) {
         if (response != null) {
@@ -147,6 +147,8 @@ function change(res, type) {
             console.log(xhr);
             console.log(ajaxOptions);
             alert('Chưa có dữ liệu');
+            $("#_loading").hide();
+            $("#main_content").show()
         }
     }).done(function (response) {
         if (response.data != null) {
@@ -170,29 +172,90 @@ function change(res, type) {
         else {
             alert("Kết nối thất bại!")
         }
+        $("#_loading").hide();
+        $("#main_content").show()
     });
     event.preventDefault(); // <- avoid reloading
 }
 
-function setSemester(res) {
-    value.semester = res.value;    
-    setSemesterRegistorPeriod();
-    unDisableButton();    
+function setCourseYear(res) {
+    value.schoolYear = res.value;
+    getCourseYear(); //call ajax
+    unDisableButton();
 }
 function setSubject(res) {
-    value.subject = res.value;
-}
-function setCourse(res) {
-    value.course = res.value;
-    setFillter();
+    value.courseYear = res.value;
+    getSubject(); //call ajax
     unDisableButton();
 }
-function setPeriod(res) {
-    value.period = res.value;
-    setFillter();
+function setSubjectId(res) {
+    value.subject_id = res.value;
     unDisableButton();
 }
-
+//lấy danh sách các khóa học (k61,k62) có trong năm đó
+function getCourseYear() {
+    $.ajax({
+        url: '/StatisticByYear/getCourseYear',
+        dataType: "json",
+        type: 'POST',
+        data: { schoolYearId: value.schoolYear },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr);
+            console.log(ajaxOptions);
+        }
+    }).done(function (response) {
+        if (response.data != null) {
+            if (response.code == 200) {
+                let temp = $("#courseYear")
+                temp.empty();
+                temp.append('<option value="">Khóa học</option>');
+                for (let i = 0; i < response.data.length; i++) {
+                    let k = '<option value=' + response.data[i].id + '>' + response.data[i].name + '</option>';
+                    temp.append(k)
+                }
+            }
+            else {
+                alert(response.data);
+            }
+        }
+        else {
+            alert("Kết nối thất bại!")
+        }
+    });
+    event.preventDefault(); // <- avoid reloading
+}
+function getSubject() {
+    $.ajax({
+        url: '/StatisticByYear/getSubject',
+        dataType: "json",
+        type: 'POST',
+        data: { schoolYearId: value.schoolYear, courseYearId: value.courseYear, subjectId: value.subject_id },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr);
+            console.log(ajaxOptions);
+        }
+    }).done(function (response) {
+        if (response.data != null) {
+            if (response.code == 200) {
+                let temp = $("#subject")
+                temp.empty();
+                temp.append('<option value="">Môn học</option>');
+                for (let i = 0; i < response.data.length; i++) {
+                    let k = '<option value=' + response.data[i].id + '>' + response.data[i].subject_name + '</option>';
+                    temp.append(k)
+                }
+            }
+            else {
+                alert(response.data);
+            }
+        }
+        else {
+            alert("Kết nối thất bại!")
+        }
+    });
+    event.preventDefault(); // <- avoid reloading
+}
+//lấy danh sách các kỳ học (chính phụ tăng cường...)
 function setSemesterRegistorPeriod() {
     $.ajax({
         url: '/StatisticByYear/getSemesterRegistorPeriod',
@@ -224,39 +287,6 @@ function setSemesterRegistorPeriod() {
     });
     event.preventDefault(); // <- avoid reloading
 }
-function setFillter() {
-    $.ajax({
-        url: '/StatisticByYear/getSubject',
-        dataType: "json",
-        type: 'POST',
-        data: { courseId: value.course, semesterId: value.semester, periodId: value.period },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr);
-            console.log(ajaxOptions);
-        }
-    }).done(function (response) {
-        if (response.data != null) {
-            if (response.code == 200) {
-                response.data = response.data.sort((a, b) => { return (a.subject_name >= b.subject_name ? 1 : -1) });
-                let temp = $("#monHoc")
-                temp.empty();
-                temp.append('<option value="">Môn học</option>');
-                for (let i = 0; i < response.data.length; i++) {
-                    let k = '<option value=' + response.data[i].id + '>' + response.data[i].subject_name + '</option>';
-                    temp.append(k)
-                }
-            }
-            else {
-                alert(response.data);
-            }
-        }
-        else {
-            alert("Kết nối thất bại!")
-        }
-    });
-    event.preventDefault(); // <- avoid reloading
-}
-
 function xuat() {
     $.ajax({
         type: "POST",

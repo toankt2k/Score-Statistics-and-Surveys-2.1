@@ -30,7 +30,7 @@ namespace PhoDiem_TLU.Controllers
 
             //SelectList cateList = new SelectList(cate, "ID", "THELOAI_NAME");
             ViewBag.year = year;
-            ViewBag.semester = semester;
+            ViewBag.semester = semester; 
             ViewBag.course_year = course_year;
             ViewBag.subject = subject;
             ViewBag.semester_regitster_period = semester_register_period;
@@ -40,26 +40,34 @@ namespace PhoDiem_TLU.Controllers
             //return RedirectToAction("Error", "Login");
         }
 
-        public JsonResult getSubject(string semesterId, string periodId, string courseId)
+        public JsonResult getSubject(string schoolYearId, string courseYearId, string subjectId)
         {
-            long semester_id = 0;
-            long period_id = 0;
-            long course_id = 0;
-            if (periodId != "") period_id = long.Parse(periodId);
-            if (semesterId != "") semester_id = long.Parse(semesterId);
-            if (courseId != "") course_id = long.Parse(courseId);
+            long school_year_id = 0;
+            long course_year_id = 0;
+            long subject_id = 0;
+            if (schoolYearId != "") school_year_id = long.Parse(schoolYearId);
+            if (courseYearId != "") course_year_id = long.Parse(courseYearId);
+            if (subjectId != "") subject_id = long.Parse(subjectId);
 
             try
             {
-                var listSubject = (from s in dbSet.tbl_subject
-                                    join s1 in dbSet.tbl_semester_subject
-                                    on s.id equals s1.subject_id
-                                    where ((semesterId != "" ? (s1.semester_id == semester_id ? true : false) : true) && (periodId != "" ? (s1.register_period_id == period_id ? true : false) : true) && (courseId != "" ? (s1.course_year_id == course_id ? true : false) : true))
-                                    select new
-                                    {
-                                        s.id,
-                                        s.subject_name
-                                    }).ToList();
+                var listSubject = (from sub in dbSet.tbl_subject
+                                   join ss in dbSet.tbl_semester_subject
+                                   on sub.id equals ss.subject_id
+                                   join sem in dbSet.tbl_semester
+                                   on ss.semester_id equals sem.id
+                                   join cy in dbSet.tbl_course_year
+                                   on ss.course_year_id equals cy.id
+                                   join sy in dbSet.tbl_shool_year
+                                   on sem.school_year_id equals sy.id
+                                   where (
+                                       sy.id == school_year_id && cy.id == course_year_id
+                                   )
+                                   select new
+                                   {
+                                       sub.id,
+                                       sub.subject_name
+                                   }).Distinct().ToList();
 
                 return Json(new { code = 200, data = listSubject }, JsonRequestBehavior.AllowGet);
             }
@@ -95,16 +103,57 @@ namespace PhoDiem_TLU.Controllers
                 return Json(new { code = 500, data = "Không có dữ liệu!!" }, JsonRequestBehavior.AllowGet);
             }
         }
-        [HttpPost]
-        public JsonResult getClass(long hocKy, long khoaHoc, long dotHoc, long monHoc, string type)
+
+        public JsonResult getCourseYear(string schoolYearId)
         {
+            long school_year_id = 0;
+            if (schoolYearId != "") school_year_id = long.Parse(schoolYearId);
+
             try
-            {   //danh sách các nhóm môn học
-                var subject = dbSet.tbl_semester_subject.Where(s => s.register_period_id == dotHoc
-                                     && s.subject_id == monHoc
-                                     && s.course_year_id == khoaHoc
-                                     && s.semester_id == hocKy).FirstOrDefault();
+            {   //lấy danh sách các khóa học trong năm bằng schoolYearId
+                var listCourseYear = (from sem in dbSet.tbl_semester
+                                                  join ss in dbSet.tbl_semester_subject
+                                                  on sem.id equals ss.semester_id
+                                                  join sy in dbSet.tbl_shool_year
+                                                  on sem.school_year_id equals sy.id                                                  
+                                                  join cy in dbSet.tbl_course_year
+                                                  on ss.course_year_id equals cy.id
+                                                  where sy.id == school_year_id
+                                                   select new
+                                                  {
+                                                     cy.id,
+                                                     cy.name,
+                                                  }).Distinct().ToList();
+
+                return Json(new { code = 200, data = listCourseYear }, JsonRequestBehavior.AllowGet);
+            }
+            catch
+            {
+                return Json(new { code = 500, data = "Không có dữ liệu!!" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+        
+        public JsonResult getClass(long schoolYear, long courseYear, long subject, string type)
+        {            
+            try
+            {   //danh sách các semesterSubject
+                var listSemesterSubject = (from ss in dbSet.tbl_semester_subject
+                                           join sem in dbSet.tbl_semester
+                                           on ss.semester_id equals sem.id
+                                           join sy in dbSet.tbl_shool_year
+                                           on sem.school_year_id equals sy.id
+                                           join sub in dbSet.tbl_subject
+                                           on ss.subject_id equals sub.id
+                                           join cy in dbSet.tbl_course_year
+                                           on ss.course_year_id equals cy.id
+                                           where (sy.id == schoolYear && cy.id == courseYear && sub.id == subject)
+                                           select new
+                                           {
+                                               id = ss.id,
+                                           }
+                                           ).ToList().FirstOrDefault();
                 dynamic list;
+                //lấy danh sách nhóm theo lớp học phần
                 if (type == "1")
                 {
                     list = (from s in dbSet.tbl_course_subject
@@ -112,7 +161,7 @@ namespace PhoDiem_TLU.Controllers
                             on s.id equals class_student.course_subject_id
                             join student in dbSet.tbl_student
                             on class_student.student_id equals student.id
-                            where s.semester_subject_id == subject.id
+                            where s.semester_subject_id == listSemesterSubject.id
                             select new
                             {
                                 id = s.id,
@@ -120,6 +169,7 @@ namespace PhoDiem_TLU.Controllers
                             }).Distinct().ToList();
 
                 }
+                //lấy danh sách theo lớp quản lý
                 else
                 {
                     list = (from cs in dbSet.tbl_course_subject
@@ -129,7 +179,7 @@ namespace PhoDiem_TLU.Controllers
                             on scs.student_id equals student.id
                             join enroll in dbSet.tbl_enrollment_class
                             on student.class_id equals enroll.id
-                            where cs.semester_subject_id == subject.id
+                            where cs.semester_subject_id == listSemesterSubject.id
                             select new
                             {
                                 id = enroll.id,
