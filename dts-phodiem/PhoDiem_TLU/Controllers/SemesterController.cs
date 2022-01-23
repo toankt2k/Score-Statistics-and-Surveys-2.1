@@ -255,6 +255,7 @@ namespace PhoDiem_TLU.Controllers
         {
             try
             {
+                if (m.Length > 5) return -1;
                 var mark = double.Parse(m);
                 if (mark <= 10 && mark >= 8.45) return 4;
                 if (mark <= 8.44 && mark >= 6.95) return 3;

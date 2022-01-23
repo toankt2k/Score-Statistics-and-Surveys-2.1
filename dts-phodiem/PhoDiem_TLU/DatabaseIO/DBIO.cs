@@ -1521,19 +1521,20 @@ namespace PhoDiem_TLU.DatabaseIO
                                on s2.id equals s4.student_course_subject_id into status
 
                                join s5 in models.tbl_person
-                               on s1.teacher_id equals s5.id
+                               on s1.teacher_id equals s5.id into teacher
 
                                join s6 in models.tbl_person
                                on s3.id equals s6.id
 
                                where listId.Contains(s1.id.ToString())
                                from j in status.DefaultIfEmpty()
+                               from jj in teacher.DefaultIfEmpty()
                                select new
                                {
                                    id = s3.id,
                                    code = s3.student_code,
                                    name = s6.display_name,
-                                   teacherName = s5.display_name,
+                                   teacherName = jj == null ? "" : jj.display_name,
                                    status = j==null?0:j.exam_status_id,
                                    className = s1.display_name
                                }).Distinct().ToList();
@@ -1617,7 +1618,7 @@ namespace PhoDiem_TLU.DatabaseIO
                                on s4.semester_subject_id equals s5.id
 
                                join s6 in models.tbl_person
-                               on s1.staff_id equals s6.id
+                               on s1.staff_id equals s6.id into teacher
 
                                join s7 in models.tbl_student_semester_subject_exam_room
                                on s3.id equals s7.student_course_subject_id into status
@@ -1630,12 +1631,13 @@ namespace PhoDiem_TLU.DatabaseIO
                                && listSemester.Contains((long)s5.semester_id)
 
                                from j in status.DefaultIfEmpty()
+                               from jj in teacher.DefaultIfEmpty()
                                select new
                                {
                                    id = s2.id,
                                    name = s8.display_name,
                                    code = s2.student_code,
-                                   teacherName = s6.display_name,
+                                   teacherName = jj == null ? "" : jj.display_name,
                                    status = j==null?0:j.exam_status_id,
                                    className = s1.className
                                }).ToList();
@@ -1698,64 +1700,65 @@ namespace PhoDiem_TLU.DatabaseIO
                                 mark4 = g.Key.mark4,
                                 note = g.Key.note,
                             }).ToList();
-            #region cũ
-            //var listStudent = (from s1 in models.tbl_course_subject
-            //      join s2 in models.tbl_student_course_subject
-            //      on s1.id equals s2.course_subject_id
-
-            //      join s3 in models.tbl_student
-            //      on s2.student_id equals s3.id
-
-            //      join s4 in models.tbl_student_semester_subject_exam_room
-            //      on s2.id equals s4.student_course_subject_id
-
-            //      join s5 in models.tbl_person
-            //      on s1.teacher_id equals s5.id
-
-            //      join s6 in models.tbl_person
-            //      on s3.id equals s6.id
-
-            //      where listId.Contains(s1.id.ToString())
-
-            //      select new
-            //      {
-            //          id = s3.id,
-            //          code = s3.student_code,
-            //          name = s6.display_name,
-            //          teacherName = s5.display_name,
-            //          status = s4.exam_status_id,
-            //          className = s1.display_name
-            //      }).Distinct().ToList();
-            #endregion
-
+            #region 
             var listStudent = (from s1 in models.tbl_course_subject
-                               join s2 in models.tbl_student_course_subject
-                               on s1.id equals s2.course_subject_id
+                                join s2 in models.tbl_student_course_subject
+                                on s1.id equals s2.course_subject_id
 
-                               join s3 in models.tbl_student
-                               on s2.student_id equals s3.id
+                                join s3 in models.tbl_student
+                                on s2.student_id equals s3.id
 
-                               join s4 in models.tbl_student_semester_subject_exam_room
-                               on s2.id equals s4.student_course_subject_id into status
+                                join s4 in models.tbl_student_semester_subject_exam_room
+                                on s2.id equals s4.student_course_subject_id into status
 
-                               join s5 in models.tbl_person
-                               on s1.teacher_id equals s5.id
+                                join s5 in models.tbl_person
+                                on s1.teacher_id equals s5.id into teacher
 
-                               join s6 in models.tbl_person
-                               on s3.id equals s6.id
+                                join s6 in models.tbl_person
+                                on s3.id equals s6.id
 
-                               where listId.Contains(s1.id.ToString())
-                               from j in status.DefaultIfEmpty()
-                               select new
-                               {
-                                   id = s3.id,
-                                   code = s3.student_code,
-                                   name = s6.display_name,
-                                   teacherName = s5.display_name,
-                                   status = j==null?0:j.exam_status_id,
-                                   className = s1.display_name
-                               }).Distinct().ToList();
+                                where listId.Contains(s1.id.ToString())
+                                from j in status.DefaultIfEmpty()
+                                from jj in teacher.DefaultIfEmpty()
+                                select new
+                                {
+                                    id = s3.id,
+                                    code = s3.student_code,
+                                    name = s6.display_name,
+                                    teacherName = jj == null ? "" : jj.display_name,
+                                    status = j == null ? 0 : j.exam_status_id,
+                                    className = s1.display_name
+                                }).Distinct().ToList();
+            #endregion
+            #region giáo viên null là k lấy đc
+            //var listStudent = (from s1 in models.tbl_course_subject
+            //                   join s2 in models.tbl_student_course_subject
+            //                   on s1.id equals s2.course_subject_id
 
+            //                   join s3 in models.tbl_student
+            //                   on s2.student_id equals s3.id
+
+            //                   join s4 in models.tbl_student_semester_subject_exam_room
+            //                   on s2.id equals s4.student_course_subject_id into status
+
+            //                   join s5 in models.tbl_person
+            //                   on s1.teacher_id equals s5.id
+
+            //                   join s6 in models.tbl_person
+            //                   on s3.id equals s6.id
+
+            //                   where listId.Contains(s1.id.ToString())
+            //                   from j in status.DefaultIfEmpty()
+            //                   select new
+            //                   {
+            //                       id = s3.id,
+            //                       code = s3.student_code,
+            //                       name = s6.display_name,
+            //                       teacherName = s5.display_name,
+            //                       status = j==null?0:j.exam_status_id,
+            //                       className = s1.display_name
+            //                   }).Distinct().ToList();
+            #endregion 
             list_result = (from s1 in listStudent
                             join s2 in listMark2
                             on s1.id equals s2.id into joined
@@ -1830,7 +1833,7 @@ namespace PhoDiem_TLU.DatabaseIO
                                on s4.semester_subject_id equals s5.id
 
                                join s6 in models.tbl_person
-                               on s1.staff_id equals s6.id
+                               on s1.staff_id equals s6.id into teacher
 
                                join s7 in models.tbl_student_semester_subject_exam_room
                                on s3.id equals s7.student_course_subject_id into status
@@ -1843,12 +1846,13 @@ namespace PhoDiem_TLU.DatabaseIO
                                && s5.semester_id == semester_id
 
                                from j in status.DefaultIfEmpty()
+                               from jj in teacher.DefaultIfEmpty()
                                select new
                                {
                                    id = s2.id,
                                    name = s8.display_name,
                                    code = s2.student_code,
-                                   teacherName = s6.display_name,
+                                   teacherName = jj == null ? "" : jj.display_name,
                                    status = j==null?0:j.exam_status_id,
                                    className = s1.className
                                }).ToList();
