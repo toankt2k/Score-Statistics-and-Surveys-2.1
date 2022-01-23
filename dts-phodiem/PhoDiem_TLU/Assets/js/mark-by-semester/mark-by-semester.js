@@ -167,7 +167,7 @@ function change(res, type) {
                 $("#table_id>thead>tr .headTb").css('width', "10%");
             }
             else {
-                alert(response.data || "Không có dữ liệu");
+                alert("Không có dữ liệu");
             }
         }
         else {
