@@ -43,6 +43,6 @@ namespace PhoDiem_TLU.ViewModels
         public double? mark_gpa { get; set; }
         public string note { get; set; }
         public long? status { get; set; }
-
+        public string semester { get; set; }
     }
 }

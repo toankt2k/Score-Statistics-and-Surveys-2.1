@@ -16,7 +16,7 @@ namespace PhoDiem_TLU.Helpers
     {
         private DBIO db = new DBIO();
 
-        public Byte[] ExportBySemester(List<tbl_course_subject> list_gr, tbl_semester semester, tbl_subject subject)
+        public Byte[] ExportBySemester(List<tbl_course_subject> list_gr, List<string> semester, tbl_subject subject, string mark)
         {
             using (var excelPackage = new ExcelPackage(new FileInfo("C:\\Users\\toank\\toan2k.xlsx")))
             {
@@ -24,7 +24,9 @@ namespace PhoDiem_TLU.Helpers
                 // Tạo title cho file Excel
                 excelPackage.Workbook.Properties.Title = "Phổ điểm TLU";
                 int count_ws = 0;
-                var listResult = db.GetMarkBySemester(list_gr.Select(s=>s.id.ToString()).ToList(), subject.id, semester.id);
+                var listResult = db.GetMarkBySemester(list_gr.Select(s=>s.id.ToString()).ToList(), subject.id, semester);
+
+                var listSemes = db.getSemesterName(semester);
 
                 excelPackage.Workbook.Worksheets.Add("Tổng hợp");
                 ExcelWorksheet workSheetDefault = excelPackage.Workbook.Worksheets[count_ws];
@@ -48,7 +50,7 @@ namespace PhoDiem_TLU.Helpers
                 workSheetDefault.Cells["A5:J5"].Merge = true;
                 workSheetDefault.Cells["A5:J5"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                 workSheetDefault.Cells["A5:J5"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                workSheetDefault.Cells["A5"].Value = "Học kỳ: " + semester.semester_name;
+                workSheetDefault.Cells["A5"].Value = "Học kỳ: " + listSemes;
 
                 workSheetDefault.Cells["A6:C6"].Merge = true;
                 workSheetDefault.Cells["A6"].Value = "Môn: " + subject.subject_name;
@@ -84,11 +86,7 @@ namespace PhoDiem_TLU.Helpers
                 workSheetDefault.Cells["A1:J9"].Style.Font.Bold = true;
                 #endregion
                 int index = 10;
-                int tcA = 0;
-                int tcB = 0;
-                int tcC = 0;
-                int tcD = 0;
-                int tcF = 0;
+                int tcA = 0, tcB = 0, tcC = 0, tcD = 0, tcF = 0;
                 int max = index+2;
                 int total = 0;
                 //thêm các sheet chi tiết
@@ -116,7 +114,7 @@ namespace PhoDiem_TLU.Helpers
                     workSheet.Cells["A5:J5"].Merge = true;
                     workSheet.Cells["A5:J5"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                     workSheet.Cells["A5:J5"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    workSheet.Cells["A5"].Value = "Học kỳ: " + semester.semester_name;
+                    workSheet.Cells["A5"].Value = "Học kỳ: " + listSemes;
 
                     workSheet.Cells["A6:C6"].Merge = true;
                     workSheet.Cells["A6"].Value = "Môn: " + subject.subject_name;
@@ -188,7 +186,7 @@ namespace PhoDiem_TLU.Helpers
                     int row_max = temp.Count + 11;
 
                     workSheet.Cells["A" + (row_max + 1) + ":D" + (row_max + 1)].Merge = true;
-                    workSheet.Cells["A" + (row_max + 1) + ":D" + (row_max + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ THI";
+                    workSheet.Cells["A" + (row_max + 1) + ":D" + (row_max + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + (mark == "1" ? "QUÁ TRÌNH" : mark == "2" ? "THI" : "TỔNG KẾT");
                     workSheet.Cells["A" + (row_max + 2)].Value = "Điểm chữ";
                     workSheet.Cells["B" + (row_max + 2)].Value = "Điểm số";
                     workSheet.Cells["C" + (row_max + 2)].Value = "Số SV";
@@ -200,7 +198,7 @@ namespace PhoDiem_TLU.Helpers
                     int cF = 0;
                     foreach (var s in temp)
                     {
-                        if(s.status == 0)
+                        if(s.status == 0 && mark == "2")
                         {
                             total++;
                             if (double.Parse(s.mark_exam) <= 10 && double.Parse(s.mark_exam) >= 8.45) cA++;
@@ -209,12 +207,34 @@ namespace PhoDiem_TLU.Helpers
                             if (double.Parse(s.mark_exam) <= 5.44 && double.Parse(s.mark_exam) >= 3.95) cD++;
                             if (double.Parse(s.mark_exam) < 3.95) cF++;
                         }
+                        if(s.status == 0 && mark == "1")
+                        {
+                            total++;
+                            if (double.Parse(s.mark) <= 10 && double.Parse(s.mark) >= 8.45) cA++;
+                            if (double.Parse(s.mark) <= 8.44 && double.Parse(s.mark) >= 6.95) cB++;
+                            if (double.Parse(s.mark) <= 6.94 && double.Parse(s.mark) >= 5.45) cC++;
+                            if (double.Parse(s.mark) <= 5.44 && double.Parse(s.mark) >= 3.95) cD++;
+                            if (double.Parse(s.mark) < 3.95) cF++;
+                        }
+                        if(s.status == 0 && mark == "3")
+                        {
+                            total++;
+                            if (double.Parse(s.mark_final) <= 10 && double.Parse(s.mark_final) >= 8.45) cA++;
+                            if (double.Parse(s.mark_final) <= 8.44 && double.Parse(s.mark_final) >= 6.95) cB++;
+                            if (double.Parse(s.mark_final) <= 6.94 && double.Parse(s.mark_final) >= 5.45) cC++;
+                            if (double.Parse(s.mark_final) <= 5.44 && double.Parse(s.mark_final) >= 3.95) cD++;
+                            if (double.Parse(s.mark_final) < 3.95) cF++;
+                        }
+
                     }
+                    
                     tcA += cA;
                     tcB += cB;
                     tcC += cC;
                     tcD += cD;
                     tcF += cF;
+
+
                     #region chi tiết
                     workSheet.Cells["A" + (row_max + 3)].Value = "A";
                     workSheet.Cells["B" + (row_max + 3)].Value = "8.45-10";
@@ -256,7 +276,7 @@ namespace PhoDiem_TLU.Helpers
                 }
                 #region Tổng hợp
                 workSheetDefault.Cells["A" + (max + 1) + ":D" + (max + 1)].Merge = true;
-                workSheetDefault.Cells["A" + (max + 1) + ":D" + (max + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ THI";
+                workSheetDefault.Cells["A" + (max + 1) + ":D" + (max + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + (mark=="1"?"QUÁ TRÌNH":mark=="2"?"THI":"TỔNG KẾT");
                 workSheetDefault.Cells["A" + (max + 2)].Value = "Điểm chữ";
                 workSheetDefault.Cells["B" + (max + 2)].Value = "Điểm số";
                 workSheetDefault.Cells["C" + (max + 2)].Value = "Số SV";
@@ -264,27 +284,27 @@ namespace PhoDiem_TLU.Helpers
                 workSheetDefault.Cells["A" + (max + 3)].Value = "A";
                 workSheetDefault.Cells["B" + (max + 3)].Value = "8.45-10";
                 workSheetDefault.Cells["C" + (max + 3)].Value = tcA;
-                workSheetDefault.Cells["D" + (max + 3)].Value = tcA * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 3)].Value = total ==0 ? "0" : tcA * 100 / total + " %";
 
                 workSheetDefault.Cells["A" + (max + 4)].Value = "B";
                 workSheetDefault.Cells["B" + (max + 4)].Value = "6.95-8.44";
                 workSheetDefault.Cells["C" + (max + 4)].Value = tcB;
-                workSheetDefault.Cells["D" + (max + 4)].Value = tcB * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 4)].Value = total == 0 ? "0" : tcB * 100 / total + " %";
 
                 workSheetDefault.Cells["A" + (max + 5)].Value = "C";
                 workSheetDefault.Cells["B" + (max + 5)].Value = "5.45-6.94";
                 workSheetDefault.Cells["C" + (max + 5)].Value = tcC;
-                workSheetDefault.Cells["D" + (max + 5)].Value = tcC * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 5)].Value = total == 0 ? "0" : tcC * 100 / total + " %";
 
                 workSheetDefault.Cells["A" + (max + 6)].Value = "D";
                 workSheetDefault.Cells["B" + (max + 6)].Value = "3.95-5.44";
                 workSheetDefault.Cells["C" + (max + 6)].Value = tcD;
-                workSheetDefault.Cells["D" + (max + 6)].Value = tcD * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 6)].Value = total == 0 ? "0" : tcD * 100 / total + " %";
 
                 workSheetDefault.Cells["A" + (max + 7)].Value = "F";
                 workSheetDefault.Cells["B" + (max + 7)].Value = "0-3.94";
                 workSheetDefault.Cells["C" + (max + 7)].Value = tcF;
-                workSheetDefault.Cells["D" + (max + 7)].Value = tcF * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 7)].Value = total == 0 ? "0" : tcF * 100 / total + " %";
 
                 var d = DateTime.Today.ToString("dd");
                 var m = DateTime.Today.ToString("MM");
@@ -304,7 +324,7 @@ namespace PhoDiem_TLU.Helpers
         
         }
 
-        public Byte[] ExportByClass(List<tbl_enrollment_class> list_gr, tbl_semester semester, tbl_subject subject)
+        public Byte[] ExportByClass(List<tbl_enrollment_class> list_gr, List<string> semester, tbl_subject subject, string mark)
         {
             using (var excelPackage = new ExcelPackage(new FileInfo("C:\\Users\\toank\\toan2k.xlsx")))
             {
@@ -312,7 +332,9 @@ namespace PhoDiem_TLU.Helpers
                 // Tạo title cho file Excel
                 excelPackage.Workbook.Properties.Title = "Phổ điểm TLU";
                 int count_ws = 0;
-                var listResult = db.GetMarkByClass(list_gr.Select(s => s.id.ToString()).ToList(), subject.id, semester.id);
+                var listResult = db.GetMarkByClass(list_gr.Select(s => s.id.ToString()).ToList(), subject.id, semester);
+
+                var listSemes = db.getSemesterName(semester);
 
                 excelPackage.Workbook.Worksheets.Add("Tổng hợp");
                 ExcelWorksheet workSheetDefault = excelPackage.Workbook.Worksheets[count_ws];
@@ -336,7 +358,7 @@ namespace PhoDiem_TLU.Helpers
                 workSheetDefault.Cells["A5:J5"].Merge = true;
                 workSheetDefault.Cells["A5:J5"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                 workSheetDefault.Cells["A5:J5"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                workSheetDefault.Cells["A5"].Value = "Học kỳ: " + semester.semester_name;
+                workSheetDefault.Cells["A5"].Value = "Học kỳ: " + listSemes;
 
                 workSheetDefault.Cells["A6:C6"].Merge = true;
                 workSheetDefault.Cells["A6"].Value = "Môn: " + subject.subject_name;
@@ -404,7 +426,7 @@ namespace PhoDiem_TLU.Helpers
                     workSheet.Cells["A5:J5"].Merge = true;
                     workSheet.Cells["A5:J5"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                     workSheet.Cells["A5:J5"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    workSheet.Cells["A5"].Value = "Học kỳ: " + semester.semester_name;
+                    workSheet.Cells["A5"].Value = "Học kỳ: " + listSemes;
 
                     workSheet.Cells["A6:C6"].Merge = true;
                     workSheet.Cells["A6"].Value = "Môn: " + subject.subject_name;
@@ -476,7 +498,7 @@ namespace PhoDiem_TLU.Helpers
                     int row_max = temp.Count + 11;
 
                     workSheet.Cells["A" + (row_max + 1) + ":D" + (row_max + 1)].Merge = true;
-                    workSheet.Cells["A" + (row_max + 1) + ":D" + (row_max + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ THI";
+                    workSheet.Cells["A" + (row_max + 1) + ":D" + (row_max + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + (mark == "1" ? "QUÁ TRÌNH" : mark == "2" ? "THI" : "TỔNG KẾT");
                     workSheet.Cells["A" + (row_max + 2)].Value = "Điểm chữ";
                     workSheet.Cells["B" + (row_max + 2)].Value = "Điểm số";
                     workSheet.Cells["C" + (row_max + 2)].Value = "Số SV";
@@ -488,7 +510,7 @@ namespace PhoDiem_TLU.Helpers
                     int cF = 0;
                     foreach (var s in temp)
                     {
-                        if (s.status == 0)
+                        if (s.status == 0 && mark == "2")
                         {
                             total++;
                             if (double.Parse(s.mark_exam) <= 10 && double.Parse(s.mark_exam) >= 8.45) cA++;
@@ -496,6 +518,24 @@ namespace PhoDiem_TLU.Helpers
                             if (double.Parse(s.mark_exam) <= 6.94 && double.Parse(s.mark_exam) >= 5.45) cC++;
                             if (double.Parse(s.mark_exam) <= 5.44 && double.Parse(s.mark_exam) >= 3.95) cD++;
                             if (double.Parse(s.mark_exam) < 3.95) cF++;
+                        }
+                        if (s.status == 0 && mark == "1")
+                        {
+                            total++;
+                            if (double.Parse(s.mark) <= 10 && double.Parse(s.mark) >= 8.45) cA++;
+                            if (double.Parse(s.mark) <= 8.44 && double.Parse(s.mark) >= 6.95) cB++;
+                            if (double.Parse(s.mark) <= 6.94 && double.Parse(s.mark) >= 5.45) cC++;
+                            if (double.Parse(s.mark) <= 5.44 && double.Parse(s.mark) >= 3.95) cD++;
+                            if (double.Parse(s.mark) < 3.95) cF++;
+                        }
+                        if (s.status == 0 && mark == "3")
+                        {
+                            total++;
+                            if (double.Parse(s.mark_final) <= 10 && double.Parse(s.mark_final) >= 8.45) cA++;
+                            if (double.Parse(s.mark_final) <= 8.44 && double.Parse(s.mark_final) >= 6.95) cB++;
+                            if (double.Parse(s.mark_final) <= 6.94 && double.Parse(s.mark_final) >= 5.45) cC++;
+                            if (double.Parse(s.mark_final) <= 5.44 && double.Parse(s.mark_final) >= 3.95) cD++;
+                            if (double.Parse(s.mark_final) < 3.95) cF++;
                         }
                     }
                     tcA += cA;
@@ -544,7 +584,7 @@ namespace PhoDiem_TLU.Helpers
                 }
                 #region Tổng hợp
                 workSheetDefault.Cells["A" + (max + 1) + ":D" + (max + 1)].Merge = true;
-                workSheetDefault.Cells["A" + (max + 1) + ":D" + (max + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ THI";
+                workSheetDefault.Cells["A" + (max + 1) + ":D" + (max + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + (mark == "1" ? "QUÁ TRÌNH" : mark == "2" ? "THI" : "TỔNG KẾT");
                 workSheetDefault.Cells["A" + (max + 2)].Value = "Điểm chữ";
                 workSheetDefault.Cells["B" + (max + 2)].Value = "Điểm số";
                 workSheetDefault.Cells["C" + (max + 2)].Value = "Số SV";
@@ -552,27 +592,27 @@ namespace PhoDiem_TLU.Helpers
                 workSheetDefault.Cells["A" + (max + 3)].Value = "A";
                 workSheetDefault.Cells["B" + (max + 3)].Value = "8.45-10";
                 workSheetDefault.Cells["C" + (max + 3)].Value = tcA;
-                workSheetDefault.Cells["D" + (max + 3)].Value = tcA * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 3)].Value = total == 0 ? "0" : tcA * 100 / total + " %";
 
                 workSheetDefault.Cells["A" + (max + 4)].Value = "B";
                 workSheetDefault.Cells["B" + (max + 4)].Value = "6.95-8.44";
                 workSheetDefault.Cells["C" + (max + 4)].Value = tcB;
-                workSheetDefault.Cells["D" + (max + 4)].Value = tcB * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 4)].Value = total == 0 ? "0" : tcB * 100 / total + " %";
 
                 workSheetDefault.Cells["A" + (max + 5)].Value = "C";
                 workSheetDefault.Cells["B" + (max + 5)].Value = "5.45-6.94";
                 workSheetDefault.Cells["C" + (max + 5)].Value = tcC;
-                workSheetDefault.Cells["D" + (max + 5)].Value = tcC * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 5)].Value = total == 0 ? "0" : tcC * 100 / total + " %";
 
                 workSheetDefault.Cells["A" + (max + 6)].Value = "D";
                 workSheetDefault.Cells["B" + (max + 6)].Value = "3.95-5.44";
                 workSheetDefault.Cells["C" + (max + 6)].Value = tcD;
-                workSheetDefault.Cells["D" + (max + 6)].Value = tcD * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 6)].Value = total == 0 ? "0" : tcD * 100 / total + " %";
 
                 workSheetDefault.Cells["A" + (max + 7)].Value = "F";
                 workSheetDefault.Cells["B" + (max + 7)].Value = "0-3.94";
                 workSheetDefault.Cells["C" + (max + 7)].Value = tcF;
-                workSheetDefault.Cells["D" + (max + 7)].Value = tcF * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 7)].Value = total == 0 ? "0" : tcF * 100 / total + " %";
 
                 var d = DateTime.Today.ToString("dd");
                 var m = DateTime.Today.ToString("MM");
