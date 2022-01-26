@@ -4,14 +4,38 @@
     $('#chart_exam').hide();
     $('#chart_final').hide();
     if (name != '') $(`#${name}`).show();
+    if (name == 'chart_qt') {
+        setTable(dataQt);
+        $("#export").empty();
+        value.mark = '1';
+        $("#export").append('<i class="fa fa-download"></i>&nbsp Điểm quá trình');
+    }
+    if (name == 'chart_exam') {
+        setTable(dataExam);
+        $("#export").empty();
+        value.mark = '2';
+        $("#export").append('<i class="fa fa-download"></i>&nbsp Điểm thi');
+    }
+    if (name == 'chart_final') {
+        setTable(dataFinal);
+        $("#export").empty();
+        value.mark = '3';
+        $("#export").append('<i class="fa fa-download"></i>&nbsp Điểm tổng kết');
+    }
+    
 }
-var value = { value: '', subject: '', semester: '', course: '', period: '' };
+var value = { value: '', subject: '', semester: '', course: '', period: '', type: '', mark: '2' };
 var listClass = new Set();
+var listSemester = new Set();
+var dataExam = [];
+var dataQt = [];
+var dataFinal = [];
 var chart_data = {
     qt: [],
     exam: [],
     final: []
 };
+
 $('.dropdown-container')
     .on('click', '.dropdown-button', function () {
         $(this).siblings('.dropdown-list').toggle();
@@ -33,7 +57,29 @@ $('.dropdown-container')
         });
     });
 
-    
+$('#multi').on('click', function () {
+    $("#hocKySelect").toggle();
+})
+$('#hocKySelect > option').on('click', function () {
+
+    if (listSemester.has(this.value)) {
+        listSemester.delete(this.value)
+        this.style.color = '#495057'
+        this.style.fontWeight = 'normal'
+    }
+    else {
+        if (this.value != '') {
+            listSemester.add(this.value)
+            this.style.color = '#007bff'
+            this.style.fontWeight = 'bold'
+        }
+        
+    }
+    let str = "Học kỳ";
+    str += '<span style="color:#0069d9;font-weight:bold"> (' + listSemester.size + ')</span>';
+    $('#selected').empty().append(str)
+    setFillter();
+});
 
 
 
@@ -56,7 +102,7 @@ function getClass(type) {
     $.ajax({
         method: form.attr('method'),
         url: form.attr('action'),
-        data: form.serialize() + "&type=" + type,
+        data: form.serialize() + "&type=" + type + "&semester=" +[...listSemester],
         type: 'GET',
         // other AJAX settings goes here
         // ..
@@ -151,20 +197,19 @@ function change(res, type) {
         url: '/Semester/GetMark',
         dataType: "json",
         type: 'POST',
-        data: { listId: [...listClass], type: value.type, subject: value.subject, semester: value.semester },
+        data: { listId: [...listClass], type: value.type, subject: value.subject, semester: [...listSemester] },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr);
             console.log(ajaxOptions);
         }
     }).done(function (response) {
-        if (response.data != null) {
-            if (response.code == 200 && response.data.length > 0) {
-                let data1 = response.data.map(Object.values);;
+        if (response.dataExam != null) {
+            if (response.code == 200 && response.dataExam.length > 0) {
+                dataExam = response.dataExam.map(Object.values);
+                dataQt = response.dataQt.map(Object.values);
+                dataFinal = response.dataFinal.map(Object.values);
                 chart_data = response.chart_mark;
-                $("#table_id").DataTable().clear();
-                $("#table_id").DataTable().rows.add(data1);
-                $("#table_id").DataTable().draw();
-                $("#table_id>thead>tr .headTb").css('width', "10%");
+                setTable(dataExam);
             }
             else {
                 alert("Không có dữ liệu");
@@ -177,6 +222,13 @@ function change(res, type) {
         $("#main_content").show()
     });
     event.preventDefault(); // <- avoid reloading
+}
+
+function setTable(data1) {
+    $("#table_id").DataTable().clear();
+    $("#table_id").DataTable().rows.add(data1);
+    $("#table_id").DataTable().draw();
+    $("#table_id>thead>tr .headTb").css('width', "10%");
 }
 
 function setSemester(res) {
@@ -200,7 +252,7 @@ function setFillter() {
         url: '/Semester/getSubject',
         dataType: "json",
         type: 'POST',
-        data: { courseId: value.course, semesterId:value.semester, periodId:value.period },
+        data: { courseId: value.course, semesterId: [...listSemester], periodId: value.period },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr);
             console.log(ajaxOptions);
@@ -209,7 +261,7 @@ function setFillter() {
         if (response.data != null) {
             if (response.code == 200) {
                 response.data = response.data.sort((a,b) => { return (a.subject_name >= b.subject_name?1:-1)});
-                let temp = $("#monHoc")
+                let temp = $("#monHocSelect")
                 temp.empty();
                 temp.append('<option value="">Môn học</option>');
                 for (let i = 0; i < response.data.length; i++) {
@@ -235,8 +287,9 @@ function xuat() {
         data: {
             type: value.type,
             subject: value.subject,
-            semester: value.semester,
-            data: [...listClass]
+            semester: [...listSemester],
+            data: [...listClass],
+            mark: value.mark,
         },
         error: function (a, b,c) {
             console.log(a);

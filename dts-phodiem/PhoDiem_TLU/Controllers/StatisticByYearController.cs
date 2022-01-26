@@ -237,39 +237,39 @@ namespace PhoDiem_TLU.Controllers
             }
         }
         
-        public JsonResult Export(string type, string subject, string semester, string data)//xuat 1 bang
-        {
-            try
-            {
-                long _id = long.Parse(data);
-                var tp = type;
-                var subject_id = long.Parse(subject);
-                var semester_id = long.Parse(semester);
+        //public JsonResult Export(string type, string subject, string semester, string data)//xuat 1 bang
+        //{
+        //    try
+        //    {
+        //        long _id = long.Parse(data);
+        //        var tp = type;
+        //        var subject_id = long.Parse(subject);
+        //        var semester_id = long.Parse(semester);
 
-                var semes = dbSet.tbl_semester.Find(semester_id);
-                var subj = dbSet.tbl_subject.Find(subject_id);
+        //        var semes = dbSet.tbl_semester.Find(semester_id);
+        //        var subj = dbSet.tbl_subject.Find(subject_id);
 
-                ExcelExport export = new ExcelExport();
-                var list_gr = new List<tbl_course_subject>();
-                var list_class = new List<tbl_enrollment_class>();
-                if (tp == "1")
-                {
-                    list_gr = dbSet.tbl_course_subject.Where(s => s.id == _id).ToList();//tim 1 nhom
-                    var result = export.ExportBySemester(list_gr, semes, subj);
-                    return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
-                }
-                else
-                {
-                    list_class = dbSet.tbl_enrollment_class.Where(s => s.id == _id).ToList();
-                    var result = export.ExportByClass(list_class, semes, subj);
-                    return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
-                }
-            }
-            catch (Exception e)
-            {
-                return Json(new { code = 500, mgs = e.ToString() }, JsonRequestBehavior.AllowGet);
-            }
-        }
+        //        ExcelExport export = new ExcelExport();
+        //        var list_gr = new List<tbl_course_subject>();
+        //        var list_class = new List<tbl_enrollment_class>();
+        //        if (tp == "1")
+        //        {
+        //            list_gr = dbSet.tbl_course_subject.Where(s => s.id == _id).ToList();//tim 1 nhom
+        //            var result = export.ExportBySemester(list_gr, semes, subj);
+        //            return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
+        //        }
+        //        else
+        //        {
+        //            list_class = dbSet.tbl_enrollment_class.Where(s => s.id == _id).ToList();
+        //            var result = export.ExportByClass(list_class, semes, subj);
+        //            return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return Json(new { code = 500, mgs = e.ToString() }, JsonRequestBehavior.AllowGet);
+        //    }
+        //}
 
         public JsonResult GetMark(List<string> listId, string type, string subject, string year)
         {
@@ -294,7 +294,7 @@ namespace PhoDiem_TLU.Controllers
                         long _subject = long.Parse(subject);
                         long _year = long.Parse(year);
 
-                        list_result.AddRange(data.GetMarkByClass(listId, _subject, _year));
+                        list_result.AddRange(data.GetMarkByClassYear(listId, _subject, _year));
                     }
                 }
                 var resultExam = new List<MarkStatiticBySemester>();

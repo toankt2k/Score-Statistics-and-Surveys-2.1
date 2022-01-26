@@ -39,13 +39,11 @@ namespace PhoDiem_TLU.Controllers
             //return RedirectToAction("Error", "Login");
         }
 
-        public JsonResult getSubject(string semesterId, string periodId, string courseId)
+        public JsonResult getSubject(List<string> semesterId, string periodId, string courseId)
         {
-            long semester_id = 0;
             long period_id = 0;
             long course_id = 0;
             if (periodId != "") period_id = long.Parse(periodId);
-            if (semesterId != "") semester_id = long.Parse(semesterId);
             if (courseId != "") course_id = long.Parse(courseId);
 
             try
@@ -53,7 +51,9 @@ namespace PhoDiem_TLU.Controllers
                 var list_subject = (from s in dbSet.tbl_subject
                                     join s1 in dbSet.tbl_semester_subject
                                     on s.id equals s1.subject_id
-                                    where ((semesterId != "" ? (s1.semester_id == semester_id ? true : false) : true) && (periodId != "" ? (s1.register_period_id == period_id ? true : false) : true) && (courseId != "" ? (s1.course_year_id == course_id ? true : false) : true))
+                                    where semesterId.Count == 0 ?true: semesterId.Contains(s1.semester_id.ToString())
+                                    && (periodId == "" ?true:s1.register_period_id == period_id)
+                                    && (courseId == "" ?true:s1.course_year_id == course_id )
                                     select new { 
                                         s.id,
                                         s.subject_name
@@ -67,14 +67,14 @@ namespace PhoDiem_TLU.Controllers
             }
         }
         [HttpPost]
-        public JsonResult getClass(long hocKy, long khoaHoc, long dotHoc, long monHoc, string type)
+        public JsonResult getClass(List<string> semester, long khoaHoc, long dotHoc, long monHoc, string type)
         {
             try
             {   //danh sách các nhóm môn học
                 var subject = dbSet.tbl_semester_subject.Where(s => s.register_period_id == dotHoc
                                      && s.subject_id == monHoc
                                      && s.course_year_id == khoaHoc
-                                     && s.semester_id == hocKy).FirstOrDefault();
+                                     && semester.Contains(s.semester_id.ToString())).FirstOrDefault();
                 dynamic list;
                 if (type == "1") {
                     list = (from s in dbSet.tbl_course_subject
@@ -116,15 +116,13 @@ namespace PhoDiem_TLU.Controllers
             }
         }
 
-        public JsonResult ExportAll(string type, string subject, string semester, List<string> data)
+        public JsonResult ExportAll(string type, string subject, List<string> semester, List<string> data, string mark)
         {
             try
             {
                 var tp = type;
                 var subject_id = long.Parse(subject);
-                var semester_id = long.Parse(semester);
 
-                var semes = dbSet.tbl_semester.Find(semester_id);
                 var subj = dbSet.tbl_subject.Find(subject_id);
 
                 ExcelExport export = new ExcelExport();
@@ -136,9 +134,9 @@ namespace PhoDiem_TLU.Controllers
                     {
                         list_gr.Add(dbSet.tbl_course_subject.Find(int.Parse(id)));
                     }
-                    var result = export.ExportBySemester(list_gr, semes, subj);
+                    var result = export.ExportBySemester(list_gr, semester, subj, mark);
                     //return File(result, "xlsx/xls", "Phổ điểm" + semes.semester_name + ".xlsx");
-                    return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
+                    return Json(new { code = 200, name = "Phổ điểm Tlu.xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
                 }
                 else
                 {
@@ -146,9 +144,9 @@ namespace PhoDiem_TLU.Controllers
                     {
                         list_class.Add(dbSet.tbl_enrollment_class.Find(int.Parse(id)));
                     }
-                    var result = export.ExportByClass(list_class, semes, subj);
+                    var result = export.ExportByClass(list_class, semester, subj, mark);
                     //return File(result, "xlsx/xls", "Phổ điểm" + semes.semester_name + ".xlsx");
-                    return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
+                    return Json(new { code = 200, name = "Phổ điểm Tlu.xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
                 }
             }
             catch (Exception e)
@@ -157,41 +155,41 @@ namespace PhoDiem_TLU.Controllers
             }
         }
 
-        public JsonResult Export(string type, string subject, string semester, string data)//xuat 1 bang
-        {
-            try
-            {
-                long _id = long.Parse(data);
-                var tp = type;
-                var subject_id = long.Parse(subject);
-                var semester_id = long.Parse(semester);
+        //public JsonResult Export(string type, string subject, string semester, string data)//xuat 1 bang
+        //{
+        //    try
+        //    {
+        //        long _id = long.Parse(data);
+        //        var tp = type;
+        //        var subject_id = long.Parse(subject);
+        //        var semester_id = long.Parse(semester);
 
-                var semes = dbSet.tbl_semester.Find(semester_id);
-                var subj = dbSet.tbl_subject.Find(subject_id);
+        //        var semes = dbSet.tbl_semester.Find(semester_id);
+        //        var subj = dbSet.tbl_subject.Find(subject_id);
 
-                ExcelExport export = new ExcelExport();
-                var list_gr = new List<tbl_course_subject>();
-                var list_class = new List<tbl_enrollment_class>();
-                if (tp == "1")
-                {
-                    list_gr = dbSet.tbl_course_subject.Where(s => s.id == _id).ToList();//tim 1 nhom
-                    var result = export.ExportBySemester(list_gr, semes, subj);
-                    return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
-                }
-                else
-                {
-                    list_class = dbSet.tbl_enrollment_class.Where(s => s.id == _id).ToList();
-                    var result = export.ExportByClass(list_class, semes, subj);
-                    return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
-                }
-            }
-            catch (Exception e)
-            {
-                return Json(new { code = 500, mgs = e.ToString() }, JsonRequestBehavior.AllowGet);
-            }
-        }
+        //        ExcelExport export = new ExcelExport();
+        //        var list_gr = new List<tbl_course_subject>();
+        //        var list_class = new List<tbl_enrollment_class>();
+        //        if (tp == "1")
+        //        {
+        //            list_gr = dbSet.tbl_course_subject.Where(s => s.id == _id).ToList();//tim 1 nhom
+        //            var result = export.ExportBySemester(list_gr, semes, subj);
+        //            return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
+        //        }
+        //        else
+        //        {
+        //            list_class = dbSet.tbl_enrollment_class.Where(s => s.id == _id).ToList();
+        //            var result = export.ExportByClass(list_class, semes, subj);
+        //            return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return Json(new { code = 500, mgs = e.ToString() }, JsonRequestBehavior.AllowGet);
+        //    }
+        //}
 
-        public JsonResult GetMark(List<string> listId, string type, string subject, string semester)
+        public JsonResult GetMark(List<string> listId, string type, string subject, List<string> semester)
         {
             try
             {
@@ -205,16 +203,14 @@ namespace PhoDiem_TLU.Controllers
                     if (type == "1")
                     {
                         long _subject = long.Parse(subject);
-                        long _semester = long.Parse(semester);
 
-                        list_result.AddRange(data.GetMarkBySemester(listId, _subject, _semester));
+                        list_result.AddRange(data.GetMarkBySemester(listId, _subject, semester));
                     }
                     else
                     {
                         long _subject = long.Parse(subject);
-                        long _semester = long.Parse(semester);
 
-                        list_result.AddRange(data.GetMarkByClass(listId, _subject, _semester));
+                        list_result.AddRange(data.GetMarkByClass(listId, _subject, semester));
                     }
                 }
                 var resultExam = new List<MarkStatiticBySemester>();
@@ -239,11 +235,11 @@ namespace PhoDiem_TLU.Controllers
                     }
                     stt++;
                     resultExam.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(),cl.Key.teacherName.ToString(), list_mark[4], list_mark[3], list_mark[2], list_mark[1], list_mark[0], total, cl.Key.subject.ToString()));
-                    resultFinal.Add(new MarkStatiticBySemester(stt,cl.Key.ToString(), cl.Key.teacherName.ToString(), list_mark_final[4], list_mark_final[3], list_mark_final[2], list_mark_final[1], list_mark_final[0], total, cl.Key.subject.ToString()));
-                    resultQt.Add(new MarkStatiticBySemester(stt,cl.Key.ToString(), cl.Key.teacherName.ToString(), list_mark_QT[4], list_mark_QT[3], list_mark_QT[2], list_mark_QT[1], list_mark_QT[0], total, cl.Key.subject.ToString()));
+                    resultFinal.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(), cl.Key.teacherName.ToString(), list_mark_final[4], list_mark_final[3], list_mark_final[2], list_mark_final[1], list_mark_final[0], total, cl.Key.subject.ToString()));
+                    resultQt.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(), cl.Key.teacherName.ToString(), list_mark_QT[4], list_mark_QT[3], list_mark_QT[2], list_mark_QT[1], list_mark_QT[0], total, cl.Key.subject.ToString()));
                 
                 }
-                return Json(new { code = 200, data = resultExam, chart_mark = new { qt = listMarkQT, exam = listMark, final = listMarkFinal } }, JsonRequestBehavior.AllowGet);
+                return Json(new { code = 200, dataQt = resultQt, dataFinal = resultFinal, dataExam = resultExam, chart_mark = new { qt = listMarkQT, exam = listMark, final = listMarkFinal } }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception e)
             {
@@ -255,6 +251,7 @@ namespace PhoDiem_TLU.Controllers
         {
             try
             {
+                if (m.Length > 5) return -1;
                 var mark = double.Parse(m);
                 if (mark <= 10 && mark >= 8.45) return 4;
                 if (mark <= 8.44 && mark >= 6.95) return 3;
