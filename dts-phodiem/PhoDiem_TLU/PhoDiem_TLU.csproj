@@ -357,7 +357,6 @@
     <Compile Include="Commons\PaginationSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\DataExcel.cs" />
-    <Compile Include="ViewModels\IDChecked.cs" />
     <Compile Include="ViewModels\MarkStatiticBySemester.cs" />
     <Compile Include="ViewModels\DataViewModels.cs" />
     <Compile Include="ViewModels\MarkByDepartment.cs" />

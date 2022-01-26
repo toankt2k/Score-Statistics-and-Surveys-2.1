@@ -1209,9 +1209,22 @@ namespace PhoDiem_TLU.Helpers
 
         }
 
-
-        public Byte[] ExportExcelDataCourseSubject(string markOption, string subjectName, long numberOfCredit, long startYear, long EndYear, List<Data> dataMark)
+        public Byte[] ExportExcelDataTeacher(string markOption, string subjectName, long numberOfCredit, string semesterNameStart, string semesterNameEnd, List<StudentMarkViewModel> studentMarkViewModels,
+            List<MarkRate> dataTable)
         {
+            var result = (from s in studentMarkViewModels
+                          group new
+                          {
+                              s.teacherID,
+                              s.teacherName,
+                              s.studentcode,
+                              s.studentName,
+                              s.mark
+
+
+                          } by s.teacherID into list
+                          select list);
+
             MemoryStream stream = new MemoryStream();
             using (ExcelPackage package = new ExcelPackage(stream))
             {
@@ -1228,330 +1241,7 @@ namespace PhoDiem_TLU.Helpers
                 sheet.Cells["A4"].Value = "MÔN: " + subjectName.ToUpper();
 
                 sheet.Cells["A5:O5"].Merge = true;
-                sheet.Cells["A5"].Value = markOption.ToUpper() + " " + startYear.ToString() + "-" + EndYear.ToString();
-
-                sheet.Cells["A6:O6"].Merge = true;
-                sheet.Cells["A6"].Value = "SỐ TÍN CHỈ: " + numberOfCredit.ToString();
-
-                int num = 8;
-                sheet.Cells["A" + num.ToString() + ":A" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["A" + (num).ToString()].Value = "STT";
-                sheet.Cells["B" + num.ToString() + ":B" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["B" + (num).ToString()].Value = "Nhóm môn học";
-                sheet.Cells["C" + num.ToString() + ":C" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["C" + (num).ToString()].Value = "Tên giáo viên";
-                sheet.Cells["D" + num.ToString() + ":D" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["D" + (num).ToString()].Value = "Tổng số điểm";
-
-                sheet.Cells["E" + num.ToString() + ":F" + (num).ToString()].Merge = true;
-                sheet.Cells["E" + (num).ToString()].Value = "Điểm A";
-                sheet.Cells["E" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["F" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm A";
-
-                sheet.Cells["G" + num.ToString() + ":H" + (num).ToString()].Merge = true;
-                sheet.Cells["G" + num.ToString()].Value = "Điểm B";
-                sheet.Cells["G" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["H" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm B";
-
-                sheet.Cells["I" + num.ToString() + ":J" + (num).ToString()].Merge = true;
-                sheet.Cells["I" + num.ToString()].Value = "Điểm C";
-                sheet.Cells["I" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["J" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm C";
-
-                sheet.Cells["K" + num.ToString() + ":L" + (num).ToString()].Merge = true;
-                sheet.Cells["K" + num.ToString()].Value = "Điểm D";
-                sheet.Cells["K" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["L" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm D";
-
-                sheet.Cells["M" + num.ToString() + ":N" + (num).ToString()].Merge = true;
-                sheet.Cells["M" + num.ToString()].Value = "Điểm F";
-                sheet.Cells["M" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["N" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm F";
-
-                sheet.Cells["O" + num.ToString() + ":O" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
-
-                sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
-
-                int rowInd = num + 2;
-                foreach (var item in dataMark)
-                {
-                    sheet.Cells[rowInd, 1].Value = item.stt;
-                    sheet.Cells[rowInd, 2].Value = item.courseSubjectName;
-                    sheet.Cells[rowInd, 3].Value = item.teacherName;
-                    sheet.Cells[rowInd, 4].Value = item.sum;
-                    sheet.Cells[rowInd, 5].Value = item.A;
-                    sheet.Cells[rowInd, 6].Value = item.rateA;
-                    sheet.Cells[rowInd, 7].Value = item.B;
-                    sheet.Cells[rowInd, 8].Value = item.rateB;
-                    sheet.Cells[rowInd, 9].Value = item.C;
-                    sheet.Cells[rowInd, 10].Value = item.rateC;
-                    sheet.Cells[rowInd, 11].Value = item.D;
-                    sheet.Cells[rowInd, 12].Value = item.rateD;
-                    sheet.Cells[rowInd, 13].Value = item.F;
-                    sheet.Cells[rowInd, 14].Value = item.rateF;
-                    rowInd++;
-                }
-                rowInd += 1;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
-                rowInd++;
-                sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-
-                package.Save();
-                var file = package.GetAsByteArray();
-                package.Dispose();
-                return file;
-            }
-        }
-
-        public Byte[] ExportExcelDataTeacher(string markOption, string subjectName, long numberOfCredit, long startYear, long EndYear, List<MarkRate> dataMark,int val)
-        {
-            string column = "Môn học";
-            if (val == 1)
-            {
-                column = "Môn học";
-            }
-            else column = "Năm học";
-            MemoryStream stream = new MemoryStream();
-            using (ExcelPackage package = new ExcelPackage(stream))
-            {
-                package.Workbook.Properties.Title = "Phổ điểm TLU";
-                var sheet = package.Workbook.Worksheets.Add($"{markOption}");
-
-                sheet.Cells["A1:E1"].Merge = true;
-                sheet.Cells["A1"].Value = "TRƯỜNG ĐẠI HỌC THỦY LỢI";
-
-                sheet.Cells["A2:E2"].Merge = true;
-                sheet.Cells["A2"].Value = "PHÒNG KHẢO THÍ VÀ ĐẢM BẢO CHẤT LƯỢNG";
-
-                sheet.Cells["A4:O4"].Merge = true;
-                sheet.Cells["A4"].Value = "MÔN: " + subjectName.ToUpper();
-
-                sheet.Cells["A5:O5"].Merge = true;
-                sheet.Cells["A5"].Value = markOption.ToUpper() + " " + startYear.ToString() + "-" + EndYear.ToString();
-
-                sheet.Cells["A6:O6"].Merge = true;
-                sheet.Cells["A6"].Value = "SỐ TÍN CHỈ: " + numberOfCredit.ToString();
-
-                int num = 8;
-                sheet.Cells["A" + num.ToString() + ":A" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["A" + (num).ToString()].Value = "STT";
-
-                sheet.Cells["B" + num.ToString() + ":B" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["B" + (num).ToString()].Value = column;
-
-                sheet.Cells["C" + num.ToString() + ":C" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["C" + (num).ToString()].Value = "Tên giáo viên";
-
-                sheet.Cells["D" + num.ToString() + ":D" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["D" + (num).ToString()].Value = "Tổng số điểm";
-
-                sheet.Cells["E" + num.ToString() + ":F" + (num).ToString()].Merge = true;
-                sheet.Cells["E" + (num).ToString()].Value = "Điểm A";
-                sheet.Cells["E" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["F" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm A";
-
-                sheet.Cells["G" + num.ToString() + ":H" + (num).ToString()].Merge = true;
-                sheet.Cells["G" + num.ToString()].Value = "Điểm B";
-                sheet.Cells["G" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["H" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm B";
-
-                sheet.Cells["I" + num.ToString() + ":J" + (num).ToString()].Merge = true;
-                sheet.Cells["I" + num.ToString()].Value = "Điểm C";
-                sheet.Cells["I" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["J" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm C";
-
-                sheet.Cells["K" + num.ToString() + ":L" + (num).ToString()].Merge = true;
-                sheet.Cells["K" + num.ToString()].Value = "Điểm D";
-                sheet.Cells["K" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["L" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm D";
-
-                sheet.Cells["M" + num.ToString() + ":N" + (num).ToString()].Merge = true;
-                sheet.Cells["M" + num.ToString()].Value = "Điểm F";
-                sheet.Cells["M" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["N" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm F";
-
-                sheet.Cells["O" + num.ToString() + ":O" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
-
-                sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
-
-                int rowInd = num + 2;
-                foreach (var item in dataMark)
-                {
-                    sheet.Cells[rowInd, 1].Value = item.stt;
-                    if(val == 1)
-                    {
-                        sheet.Cells[rowInd, 2].Value = subjectName;
-                    }
-                    else sheet.Cells[rowInd, 2].Value = item.year;
-                    sheet.Cells[rowInd, 3].Value = item.teacherName;
-                    sheet.Cells[rowInd, 4].Value = item.sum;
-                    sheet.Cells[rowInd, 5].Value = item.A;
-                    sheet.Cells[rowInd, 6].Value = item.rateA;
-                    sheet.Cells[rowInd, 7].Value = item.B;
-                    sheet.Cells[rowInd, 8].Value = item.rateB;
-                    sheet.Cells[rowInd, 9].Value = item.C;
-                    sheet.Cells[rowInd, 10].Value = item.rateC;
-                    sheet.Cells[rowInd, 11].Value = item.D;
-                    sheet.Cells[rowInd, 12].Value = item.rateD;
-                    sheet.Cells[rowInd, 13].Value = item.F;
-                    sheet.Cells[rowInd, 14].Value = item.rateF;
-                    rowInd++;
-                }
-
-                rowInd += 1;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
-                rowInd++;
-
-                sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-
-                package.Save();
-                var file = package.GetAsByteArray();
-                package.Dispose();
-                return file;
-            }
-        }
-        public Byte[] ExportExcelDataTeacher(string markOption,string teacherName,string semesterName,string courseYearName, List<MarkRate> dataMark)
-        {
-            MemoryStream stream = new MemoryStream();
-            using (ExcelPackage package = new ExcelPackage(stream))
-            {
-                package.Workbook.Properties.Title = "Phổ điểm TLU";
-                var sheet = package.Workbook.Worksheets.Add($"{markOption}");
-
-                sheet.Cells["A1:E1"].Merge = true;
-                sheet.Cells["A1"].Value = "TRƯỜNG ĐẠI HỌC THỦY LỢI";
-
-                sheet.Cells["A2:E2"].Merge = true;
-                sheet.Cells["A2"].Value = "PHÒNG KHẢO THÍ VÀ ĐẢM BẢO CHẤT LƯỢNG";
-
-                sheet.Cells["A4:O4"].Merge = true;
-                sheet.Cells["A4"].Value = "GIÁO VIÊN: " + teacherName.ToUpper();
-
-                sheet.Cells["A5:O5"].Merge = true;
-                sheet.Cells["A5"].Value = markOption.ToUpper();
-
-                sheet.Cells["A6:O6"].Merge = true;
-                sheet.Cells["A6"].Value = "Học kỳ: " + semesterName.ToUpper();
-
-                sheet.Cells["A7:O7"].Merge = true;
-                sheet.Cells["A7"].Value = "Khóa học: " + courseYearName.ToUpper();
-
-                int num = 9;
-                sheet.Cells["A" + num.ToString() + ":A" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["A" + (num).ToString()].Value = "STT";
-
-                sheet.Cells["B" + num.ToString() + ":B" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["B" + (num).ToString()].Value = "Tên môn học";
-
-                sheet.Cells["C" + num.ToString() + ":C" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["C" + (num).ToString()].Value = "Lớp học phần";
-
-                sheet.Cells["D" + num.ToString() + ":D" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["D" + (num).ToString()].Value = "Tổng số điểm";
-
-                sheet.Cells["E" + num.ToString() + ":F" + (num).ToString()].Merge = true;
-                sheet.Cells["E" + (num).ToString()].Value = "Điểm A";
-                sheet.Cells["E" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["F" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm A";
-
-                sheet.Cells["G" + num.ToString() + ":H" + (num).ToString()].Merge = true;
-                sheet.Cells["G" + num.ToString()].Value = "Điểm B";
-                sheet.Cells["G" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["H" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm B";
-
-                sheet.Cells["I" + num.ToString() + ":J" + (num).ToString()].Merge = true;
-                sheet.Cells["I" + num.ToString()].Value = "Điểm C";
-                sheet.Cells["I" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["J" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm C";
-
-                sheet.Cells["K" + num.ToString() + ":L" + (num).ToString()].Merge = true;
-                sheet.Cells["K" + num.ToString()].Value = "Điểm D";
-                sheet.Cells["K" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["L" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm D";
-
-                sheet.Cells["M" + num.ToString() + ":N" + (num).ToString()].Merge = true;
-                sheet.Cells["M" + num.ToString()].Value = "Điểm F";
-                sheet.Cells["M" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["N" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm F";
-
-                sheet.Cells["O" + num.ToString() + ":O" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
-
-                sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
-
-                int rowInd = num + 2;
-                foreach (MarkRate item in dataMark)
-                {
-                    sheet.Cells[rowInd, 1].Value = item.stt;
-                    sheet.Cells[rowInd, 2].Value = item.subjectName;
-                    sheet.Cells[rowInd, 3].Value = item.courseSubjectName;
-                    sheet.Cells[rowInd, 4].Value = item.sum;
-                    sheet.Cells[rowInd, 5].Value = item.A;
-                    sheet.Cells[rowInd, 6].Value = item.rateA;
-                    sheet.Cells[rowInd, 7].Value = item.B;
-                    sheet.Cells[rowInd, 8].Value = item.rateB;
-                    sheet.Cells[rowInd, 9].Value = item.C;
-                    sheet.Cells[rowInd, 10].Value = item.rateC;
-                    sheet.Cells[rowInd, 11].Value = item.D;
-                    sheet.Cells[rowInd, 12].Value = item.rateD;
-                    sheet.Cells[rowInd, 13].Value = item.F;
-                    sheet.Cells[rowInd, 14].Value = item.rateF;
-                    rowInd++;
-                }
-
-                rowInd += 1;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
-                rowInd++;
-
-                sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-
-                package.Save();
-                var file = package.GetAsByteArray();
-                package.Dispose();
-                return file;
-            }
-        }
-
-
-        public Byte[] ExportExcelDataEnrollmentClass(string markOption, string subjectName, long numberOfCredit, long startYear, long EndYear, List<MarksByEnrollmentClass> dataMark)
-        {
-            MemoryStream stream = new MemoryStream();
-            using (ExcelPackage package = new ExcelPackage(stream))
-            {
-                package.Workbook.Properties.Title = "Phổ điểm TLU";
-                var sheet = package.Workbook.Worksheets.Add($"{markOption}");
-
-                sheet.Cells["A1:E1"].Merge = true;
-                sheet.Cells["A1"].Value = "TRƯỜNG ĐẠI HỌC THỦY LỢI";
-
-                sheet.Cells["A2:E2"].Merge = true;
-                sheet.Cells["A2"].Value = "PHÒNG KHẢO THÍ VÀ ĐẢM BẢO CHẤT LƯỢNG";
-
-                sheet.Cells["A4:O4"].Merge = true;
-                sheet.Cells["A4"].Value = "MÔN: " + subjectName.ToUpper();
-
-                sheet.Cells["A5:O5"].Merge = true;
-                sheet.Cells["A5"].Value = markOption.ToUpper() + " " + startYear.ToString() + "-" + EndYear.ToString();
+                sheet.Cells["A5"].Value = markOption.ToUpper() + " " + semesterNameStart + "-" + semesterNameEnd;
 
                 sheet.Cells["A6:O6"].Merge = true;
                 sheet.Cells["A6"].Value = "SỐ TÍN CHỈ: " + numberOfCredit.ToString();
@@ -1564,7 +1254,7 @@ namespace PhoDiem_TLU.Helpers
                 sheet.Cells["B" + (num).ToString()].Value = "Môn học";
 
                 sheet.Cells["C" + num.ToString() + ":C" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["C" + (num).ToString()].Value = "Lớp quản lý";
+                sheet.Cells["C" + (num).ToString()].Value = "Khoa";
 
                 sheet.Cells["D" + num.ToString() + ":D" + (num + 1).ToString()].Merge = true;
                 sheet.Cells["D" + (num).ToString()].Value = "Tổng số điểm";
@@ -1600,11 +1290,11 @@ namespace PhoDiem_TLU.Helpers
                 sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
 
                 int rowInd = num + 2;
-                foreach (var item in dataMark)
+                foreach (var item in dataTable)
                 {
                     sheet.Cells[rowInd, 1].Value = item.stt;
-                    sheet.Cells[rowInd, 2].Value = item.subjectName;
-                    sheet.Cells[rowInd, 3].Value = item.enrollmentClassName;
+                    sheet.Cells[rowInd, 2].Value = subjectName;
+                    sheet.Cells[rowInd, 3].Value = item.teacherName;
                     sheet.Cells[rowInd, 4].Value = item.sum;
                     sheet.Cells[rowInd, 5].Value = item.A;
                     sheet.Cells[rowInd, 6].Value = item.rateA;
@@ -1631,12 +1321,111 @@ namespace PhoDiem_TLU.Helpers
                 sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                 sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
+                foreach (var item in result)
+                {
+                    var list = item.ToList();
+                    sheet = package.Workbook.Worksheets.Add($"{list[0].teacherName}");
+
+                    sheet.Cells["A1:E1"].Merge = true;
+                    sheet.Cells["A1"].Value = "TRƯỜNG ĐẠI HỌC THỦY LỢI";
+
+                    sheet.Cells["A2:E2"].Merge = true;
+                    sheet.Cells["A2"].Value = "PHÒNG KHẢO THÍ VÀ ĐẢM BẢO CHẤT LƯỢNG";
+
+                    sheet.Cells["A4:O4"].Merge = true;
+                    sheet.Cells["A4"].Value = "MÔN: " + subjectName.ToUpper();
+
+                    sheet.Cells["A5:O5"].Merge = true;
+                    sheet.Cells["A5"].Value = markOption.ToUpper() + " " + semesterNameStart + "-" + semesterNameEnd;
+
+                    sheet.Cells["A6:O6"].Merge = true;
+                    sheet.Cells["A6"].Value = "SỐ TÍN CHỈ: " + numberOfCredit.ToString();
+
+                    num = 8;
+                    sheet.Cells["A" + num.ToString() + ":A" + (num + 1).ToString()].Merge = true;
+                    sheet.Cells["A" + (num).ToString()].Value = "STT";
+
+                    sheet.Cells["B" + num.ToString() + ":B" + (num + 1).ToString()].Merge = true;
+                    sheet.Cells["B" + (num).ToString()].Value = "Mã sinh viên";
+
+                    sheet.Cells["C" + num.ToString() + ":C" + (num + 1).ToString()].Merge = true;
+                    sheet.Cells["C" + (num).ToString()].Value = "Tên sinh viên";
+
+                    sheet.Cells["D" + num.ToString() + ":D" + (num + 1).ToString()].Merge = true;
+                    sheet.Cells["D" + (num).ToString()].Value = $"{markOption}";
+
+                    //sheet.Cells["E" + num.ToString() + ":F" + (num).ToString()].Merge = true;
+                    //sheet.Cells["E" + (num).ToString()].Value = "Điểm A";
+                    //sheet.Cells["E" + (num + 1).ToString()].Value = "Tổng số điểm";
+                    //sheet.Cells["F" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm A";
+
+                    //sheet.Cells["G" + num.ToString() + ":H" + (num).ToString()].Merge = true;
+                    //sheet.Cells["G" + num.ToString()].Value = "Điểm B";
+                    //sheet.Cells["G" + (num + 1).ToString()].Value = "Tổng số điểm";
+                    //sheet.Cells["H" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm B";
+
+                    //sheet.Cells["I" + num.ToString() + ":J" + (num).ToString()].Merge = true;
+                    //sheet.Cells["I" + num.ToString()].Value = "Điểm C";
+                    //sheet.Cells["I" + (num + 1).ToString()].Value = "Tổng số điểm";
+                    //sheet.Cells["J" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm C";
+
+                    //sheet.Cells["K" + num.ToString() + ":L" + (num).ToString()].Merge = true;
+                    //sheet.Cells["K" + num.ToString()].Value = "Điểm D";
+                    //sheet.Cells["K" + (num + 1).ToString()].Value = "Tổng số điểm";
+                    //sheet.Cells["L" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm D";
+
+                    //sheet.Cells["M" + num.ToString() + ":N" + (num).ToString()].Merge = true;
+                    //sheet.Cells["M" + num.ToString()].Value = "Điểm F";
+                    //sheet.Cells["M" + (num + 1).ToString()].Value = "Tổng số điểm";
+                    //sheet.Cells["N" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm F";
+
+                    //sheet.Cells["O" + num.ToString() + ":O" + (num + 1).ToString()].Merge = true;
+                    //sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
+
+                    sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
+
+                    rowInd = num + 2;
+                    int count = 1;
+                    foreach (var i in list)
+                    {
+                        sheet.Cells[rowInd, 1].Value = count;
+                        sheet.Cells[rowInd, 2].Value = i.studentcode;
+                        sheet.Cells[rowInd, 3].Value = i.studentName;
+                        sheet.Cells[rowInd, 4].Value = i.mark;
+                        //sheet.Cells[rowInd, 5].Value = item.A;
+                        //sheet.Cells[rowInd, 6].Value = item.rateA;
+                        //sheet.Cells[rowInd, 7].Value = item.B;
+                        //sheet.Cells[rowInd, 8].Value = item.rateB;
+                        //sheet.Cells[rowInd, 9].Value = item.C;
+                        //sheet.Cells[rowInd, 10].Value = item.rateC;
+                        //sheet.Cells[rowInd, 11].Value = item.D;
+                        //sheet.Cells[rowInd, 12].Value = item.rateD;
+                        //sheet.Cells[rowInd, 13].Value = item.F;
+                        //sheet.Cells[rowInd, 14].Value = item.rateF;
+                        rowInd++;
+                        count++;
+                    }
+
+                    rowInd += 1;
+                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
+                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
+                    sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
+                    sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
+                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
+                    rowInd++;
+
+                    sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
+                    sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                }
+
                 package.Save();
                 var file = package.GetAsByteArray();
                 package.Dispose();
                 return file;
             }
         }
+
         public Byte[] ExportExcelDataDepartment(string markOption, string subjectName, long numberOfCredit, string semesterNameStart, string semesterNameEnd, List<StudentMarkViewModel> studentMarkViewModels,
             List<MarkByDepartment> dataTable)
         {
@@ -1853,219 +1642,7 @@ namespace PhoDiem_TLU.Helpers
                 return file;
             }
         }
-        public Byte[] ExportExcelDataDepartment(string markOption, string subjectName, long numberOfCredit, long startYear, long EndYear, List<MarkByDepartment> dataMark)
-        {
-            MemoryStream stream = new MemoryStream();
-            using (ExcelPackage package = new ExcelPackage(stream))
-            {
-                package.Workbook.Properties.Title = "Phổ điểm TLU";
-                var sheet = package.Workbook.Worksheets.Add($"{markOption}");
-
-                sheet.Cells["A1:E1"].Merge = true;
-                sheet.Cells["A1"].Value = "TRƯỜNG ĐẠI HỌC THỦY LỢI";
-
-                sheet.Cells["A2:E2"].Merge = true;
-                sheet.Cells["A2"].Value = "PHÒNG KHẢO THÍ VÀ ĐẢM BẢO CHẤT LƯỢNG";
-
-                sheet.Cells["A4:O4"].Merge = true;
-                sheet.Cells["A4"].Value = "MÔN: " + subjectName.ToUpper();
-
-                sheet.Cells["A5:O5"].Merge = true;
-                sheet.Cells["A5"].Value = markOption.ToUpper() + " " + startYear.ToString() + "-" + EndYear.ToString();
-
-                sheet.Cells["A6:O6"].Merge = true;
-                sheet.Cells["A6"].Value = "SỐ TÍN CHỈ: " + numberOfCredit.ToString();
-
-                int num = 8;
-                sheet.Cells["A" + num.ToString() + ":A" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["A" + (num).ToString()].Value = "STT";
-
-                sheet.Cells["B" + num.ToString() + ":B" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["B" + (num).ToString()].Value = "Môn học";
-
-                sheet.Cells["C" + num.ToString() + ":C" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["C" + (num).ToString()].Value = "Khoa";
-
-                sheet.Cells["D" + num.ToString() + ":D" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["D" + (num).ToString()].Value = "Tổng số điểm";
-
-                sheet.Cells["E" + num.ToString() + ":F" + (num).ToString()].Merge = true;
-                sheet.Cells["E" + (num).ToString()].Value = "Điểm A";
-                sheet.Cells["E" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["F" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm A";
-
-                sheet.Cells["G" + num.ToString() + ":H" + (num).ToString()].Merge = true;
-                sheet.Cells["G" + num.ToString()].Value = "Điểm B";
-                sheet.Cells["G" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["H" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm B";
-
-                sheet.Cells["I" + num.ToString() + ":J" + (num).ToString()].Merge = true;
-                sheet.Cells["I" + num.ToString()].Value = "Điểm C";
-                sheet.Cells["I" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["J" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm C";
-
-                sheet.Cells["K" + num.ToString() + ":L" + (num).ToString()].Merge = true;
-                sheet.Cells["K" + num.ToString()].Value = "Điểm D";
-                sheet.Cells["K" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["L" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm D";
-
-                sheet.Cells["M" + num.ToString() + ":N" + (num).ToString()].Merge = true;
-                sheet.Cells["M" + num.ToString()].Value = "Điểm F";
-                sheet.Cells["M" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["N" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm F";
-
-                sheet.Cells["O" + num.ToString() + ":O" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
-
-                sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
-
-                int rowInd = num + 2;
-                foreach (var item in dataMark)
-                {
-                    sheet.Cells[rowInd, 1].Value = item.stt;
-                    sheet.Cells[rowInd, 2].Value = item.subjectName;
-                    sheet.Cells[rowInd, 3].Value = item.departmentName;
-                    sheet.Cells[rowInd, 4].Value = item.sum;
-                    sheet.Cells[rowInd, 5].Value = item.A;
-                    sheet.Cells[rowInd, 6].Value = item.rateA;
-                    sheet.Cells[rowInd, 7].Value = item.B;
-                    sheet.Cells[rowInd, 8].Value = item.rateB;
-                    sheet.Cells[rowInd, 9].Value = item.C;
-                    sheet.Cells[rowInd, 10].Value = item.rateC;
-                    sheet.Cells[rowInd, 11].Value = item.D;
-                    sheet.Cells[rowInd, 12].Value = item.rateD;
-                    sheet.Cells[rowInd, 13].Value = item.F;
-                    sheet.Cells[rowInd, 14].Value = item.rateF;
-                    rowInd++;
-                }
-
-                rowInd += 1;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
-                rowInd++;
-
-                sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-
-                package.Save();
-                var file = package.GetAsByteArray();
-                package.Dispose();
-                return file;
-            }
-        }
-
-        //xuat du lieu cua mot lop quan ly
-        public Byte[] ExportExcelDataEnrollmentClass(string markOption, string subjectName, long numberOfCredit,string enrollmentClassName, long startYear, long EndYear, List<MarksByEnrollmentClass> dataMark)
-        {
-            MemoryStream stream = new MemoryStream();
-            using (ExcelPackage package = new ExcelPackage(stream))
-            {
-                package.Workbook.Properties.Title = "Phổ điểm TLU";
-                var sheet = package.Workbook.Worksheets.Add($"{markOption}");
-
-                sheet.Cells["A1:E1"].Merge = true;
-                sheet.Cells["A1"].Value = "TRƯỜNG ĐẠI HỌC THỦY LỢI";
-
-                sheet.Cells["A2:E2"].Merge = true;
-                sheet.Cells["A2"].Value = "PHÒNG KHẢO THÍ VÀ ĐẢM BẢO CHẤT LƯỢNG";
-
-                sheet.Cells["A4:O4"].Merge = true;
-                sheet.Cells["A4"].Value = "MÔN: " + subjectName.ToUpper();
-
-                sheet.Cells["A5:O5"].Merge = true;
-                sheet.Cells["A5"].Value = "Lớp quản lý: " + enrollmentClassName.ToUpper();
-
-                sheet.Cells["A6:O6"].Merge = true;
-                sheet.Cells["A6"].Value = markOption.ToUpper() + " " + startYear.ToString() + "-" + EndYear.ToString();
-
-                sheet.Cells["A7:O7"].Merge = true;
-                sheet.Cells["A7"].Value = "SỐ TÍN CHỈ: " + numberOfCredit.ToString();
-
-                int num = 9;
-                sheet.Cells["A" + num.ToString() + ":A" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["A" + (num).ToString()].Value = "STT";
-
-                sheet.Cells["B" + num.ToString() + ":B" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["B" + (num).ToString()].Value = "Năm";
-
-                sheet.Cells["C" + num.ToString() + ":C" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["C" + (num).ToString()].Value = "Lớp quản lý";
-
-                sheet.Cells["D" + num.ToString() + ":D" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["D" + (num).ToString()].Value = "Tổng số điểm";
-
-                sheet.Cells["E" + num.ToString() + ":F" + (num).ToString()].Merge = true;
-                sheet.Cells["E" + (num).ToString()].Value = "Điểm A";
-                sheet.Cells["E" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["F" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm A";
-
-                sheet.Cells["G" + num.ToString() + ":H" + (num).ToString()].Merge = true;
-                sheet.Cells["G" + num.ToString()].Value = "Điểm B";
-                sheet.Cells["G" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["H" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm B";
-
-                sheet.Cells["I" + num.ToString() + ":J" + (num).ToString()].Merge = true;
-                sheet.Cells["I" + num.ToString()].Value = "Điểm C";
-                sheet.Cells["I" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["J" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm C";
-
-                sheet.Cells["K" + num.ToString() + ":L" + (num).ToString()].Merge = true;
-                sheet.Cells["K" + num.ToString()].Value = "Điểm D";
-                sheet.Cells["K" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["L" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm D";
-
-                sheet.Cells["M" + num.ToString() + ":N" + (num).ToString()].Merge = true;
-                sheet.Cells["M" + num.ToString()].Value = "Điểm F";
-                sheet.Cells["M" + (num + 1).ToString()].Value = "Tổng số điểm";
-                sheet.Cells["N" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm F";
-
-                sheet.Cells["O" + num.ToString() + ":O" + (num + 1).ToString()].Merge = true;
-                sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
-
-                sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
-
-                int rowInd = num + 2;
-                foreach (var item in dataMark)
-                {
-                    sheet.Cells[rowInd, 1].Value = item.stt;
-                    sheet.Cells[rowInd, 2].Value = item.year;
-                    sheet.Cells[rowInd, 3].Value = item.enrollmentClassName;
-                    sheet.Cells[rowInd, 4].Value = item.sum;
-                    sheet.Cells[rowInd, 5].Value = item.A;
-                    sheet.Cells[rowInd, 6].Value = item.rateA;
-                    sheet.Cells[rowInd, 7].Value = item.B;
-                    sheet.Cells[rowInd, 8].Value = item.rateB;
-                    sheet.Cells[rowInd, 9].Value = item.C;
-                    sheet.Cells[rowInd, 10].Value = item.rateC;
-                    sheet.Cells[rowInd, 11].Value = item.D;
-                    sheet.Cells[rowInd, 12].Value = item.rateD;
-                    sheet.Cells[rowInd, 13].Value = item.F;
-                    sheet.Cells[rowInd, 14].Value = item.rateF;
-                    rowInd++;
-                }
-
-                rowInd += 1;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
-                rowInd++;
-
-                sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-
-                package.Save();
-                var file = package.GetAsByteArray();
-                package.Dispose();
-                return file;
-            }
-        }
+        
         public Byte[] ExportExcelDataEnrollmentClass(string markOption, string subjectName, long numberOfCredit, string semesterName, List<MarksByEnrollmentClass> dataMark)
         {
             MemoryStream stream = new MemoryStream();
@@ -2163,6 +1740,223 @@ namespace PhoDiem_TLU.Helpers
                 sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
                 sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                 sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+
+                package.Save();
+                var file = package.GetAsByteArray();
+                package.Dispose();
+                return file;
+            }
+        }
+        public Byte[] ExportExcelDataEnrollmentClass(string markOption, string subjectName, long numberOfCredit,
+            string semesterNameStart, string semesterNameEnd, List<StudentMarkViewModel> studentMarkViewModels,
+            List<MarksByEnrollmentClass> dataTable)
+        {
+            var result = (from s in studentMarkViewModels
+                          group new
+                          {
+                              s.enrollmentClassID,
+                              s.enrollmentClassName,
+                              s.studentcode,
+                              s.studentName,
+                              s.mark
+
+
+                          } by s.enrollmentClassID into list
+                          select list);
+
+            MemoryStream stream = new MemoryStream();
+            using (ExcelPackage package = new ExcelPackage(stream))
+            {
+                package.Workbook.Properties.Title = "Phổ điểm TLU";
+                var sheet = package.Workbook.Worksheets.Add($"{markOption}");
+
+                sheet.Cells["A1:E1"].Merge = true;
+                sheet.Cells["A1"].Value = "TRƯỜNG ĐẠI HỌC THỦY LỢI";
+
+                sheet.Cells["A2:E2"].Merge = true;
+                sheet.Cells["A2"].Value = "PHÒNG KHẢO THÍ VÀ ĐẢM BẢO CHẤT LƯỢNG";
+
+                sheet.Cells["A4:O4"].Merge = true;
+                sheet.Cells["A4"].Value = "MÔN: " + subjectName.ToUpper();
+
+                sheet.Cells["A5:O5"].Merge = true;
+                sheet.Cells["A5"].Value = markOption.ToUpper() + " " + semesterNameStart + "-" + semesterNameEnd;
+
+                sheet.Cells["A6:O6"].Merge = true;
+                sheet.Cells["A6"].Value = "SỐ TÍN CHỈ: " + numberOfCredit.ToString();
+
+                int num = 8;
+                sheet.Cells["A" + num.ToString() + ":A" + (num + 1).ToString()].Merge = true;
+                sheet.Cells["A" + (num).ToString()].Value = "STT";
+
+                sheet.Cells["B" + num.ToString() + ":B" + (num + 1).ToString()].Merge = true;
+                sheet.Cells["B" + (num).ToString()].Value = "Môn học";
+
+                sheet.Cells["C" + num.ToString() + ":C" + (num + 1).ToString()].Merge = true;
+                sheet.Cells["C" + (num).ToString()].Value = "Khoa";
+
+                sheet.Cells["D" + num.ToString() + ":D" + (num + 1).ToString()].Merge = true;
+                sheet.Cells["D" + (num).ToString()].Value = "Tổng số điểm";
+
+                sheet.Cells["E" + num.ToString() + ":F" + (num).ToString()].Merge = true;
+                sheet.Cells["E" + (num).ToString()].Value = "Điểm A";
+                sheet.Cells["E" + (num + 1).ToString()].Value = "Tổng số điểm";
+                sheet.Cells["F" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm A";
+
+                sheet.Cells["G" + num.ToString() + ":H" + (num).ToString()].Merge = true;
+                sheet.Cells["G" + num.ToString()].Value = "Điểm B";
+                sheet.Cells["G" + (num + 1).ToString()].Value = "Tổng số điểm";
+                sheet.Cells["H" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm B";
+
+                sheet.Cells["I" + num.ToString() + ":J" + (num).ToString()].Merge = true;
+                sheet.Cells["I" + num.ToString()].Value = "Điểm C";
+                sheet.Cells["I" + (num + 1).ToString()].Value = "Tổng số điểm";
+                sheet.Cells["J" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm C";
+
+                sheet.Cells["K" + num.ToString() + ":L" + (num).ToString()].Merge = true;
+                sheet.Cells["K" + num.ToString()].Value = "Điểm D";
+                sheet.Cells["K" + (num + 1).ToString()].Value = "Tổng số điểm";
+                sheet.Cells["L" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm D";
+
+                sheet.Cells["M" + num.ToString() + ":N" + (num).ToString()].Merge = true;
+                sheet.Cells["M" + num.ToString()].Value = "Điểm F";
+                sheet.Cells["M" + (num + 1).ToString()].Value = "Tổng số điểm";
+                sheet.Cells["N" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm F";
+
+                sheet.Cells["O" + num.ToString() + ":O" + (num + 1).ToString()].Merge = true;
+                sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
+
+                sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
+
+                int rowInd = num + 2;
+                foreach (var item in dataTable)
+                {
+                    sheet.Cells[rowInd, 1].Value = item.stt;
+                    sheet.Cells[rowInd, 2].Value = subjectName;
+                    sheet.Cells[rowInd, 3].Value = item.enrollmentClassName;
+                    sheet.Cells[rowInd, 4].Value = item.sum;
+                    sheet.Cells[rowInd, 5].Value = item.A;
+                    sheet.Cells[rowInd, 6].Value = item.rateA;
+                    sheet.Cells[rowInd, 7].Value = item.B;
+                    sheet.Cells[rowInd, 8].Value = item.rateB;
+                    sheet.Cells[rowInd, 9].Value = item.C;
+                    sheet.Cells[rowInd, 10].Value = item.rateC;
+                    sheet.Cells[rowInd, 11].Value = item.D;
+                    sheet.Cells[rowInd, 12].Value = item.rateD;
+                    sheet.Cells[rowInd, 13].Value = item.F;
+                    sheet.Cells[rowInd, 14].Value = item.rateF;
+                    rowInd++;
+                }
+
+                rowInd += 1;
+                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
+                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
+                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
+                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
+                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
+                rowInd++;
+
+                sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
+                sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+
+                foreach (var item in result)
+                {
+                    var list = item.ToList();
+                    sheet = package.Workbook.Worksheets.Add($"{list[0].enrollmentClassName}");
+
+                    sheet.Cells["A1:E1"].Merge = true;
+                    sheet.Cells["A1"].Value = "TRƯỜNG ĐẠI HỌC THỦY LỢI";
+
+                    sheet.Cells["A2:E2"].Merge = true;
+                    sheet.Cells["A2"].Value = "PHÒNG KHẢO THÍ VÀ ĐẢM BẢO CHẤT LƯỢNG";
+
+                    sheet.Cells["A4:O4"].Merge = true;
+                    sheet.Cells["A4"].Value = "MÔN: " + subjectName.ToUpper();
+
+                    sheet.Cells["A5:O5"].Merge = true;
+                    sheet.Cells["A5"].Value = markOption.ToUpper() + " " + semesterNameStart + "-" + semesterNameEnd;
+
+                    sheet.Cells["A6:O6"].Merge = true;
+                    sheet.Cells["A6"].Value = "SỐ TÍN CHỈ: " + numberOfCredit.ToString();
+
+                    num = 8;
+                    sheet.Cells["A" + num.ToString() + ":A" + (num + 1).ToString()].Merge = true;
+                    sheet.Cells["A" + (num).ToString()].Value = "STT";
+
+                    sheet.Cells["B" + num.ToString() + ":B" + (num + 1).ToString()].Merge = true;
+                    sheet.Cells["B" + (num).ToString()].Value = "Mã sinh viên";
+
+                    sheet.Cells["C" + num.ToString() + ":C" + (num + 1).ToString()].Merge = true;
+                    sheet.Cells["C" + (num).ToString()].Value = "Tên sinh viên";
+
+                    sheet.Cells["D" + num.ToString() + ":D" + (num + 1).ToString()].Merge = true;
+                    sheet.Cells["D" + (num).ToString()].Value = $"{markOption}";
+
+                    //sheet.Cells["E" + num.ToString() + ":F" + (num).ToString()].Merge = true;
+                    //sheet.Cells["E" + (num).ToString()].Value = "Điểm A";
+                    //sheet.Cells["E" + (num + 1).ToString()].Value = "Tổng số điểm";
+                    //sheet.Cells["F" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm A";
+
+                    //sheet.Cells["G" + num.ToString() + ":H" + (num).ToString()].Merge = true;
+                    //sheet.Cells["G" + num.ToString()].Value = "Điểm B";
+                    //sheet.Cells["G" + (num + 1).ToString()].Value = "Tổng số điểm";
+                    //sheet.Cells["H" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm B";
+
+                    //sheet.Cells["I" + num.ToString() + ":J" + (num).ToString()].Merge = true;
+                    //sheet.Cells["I" + num.ToString()].Value = "Điểm C";
+                    //sheet.Cells["I" + (num + 1).ToString()].Value = "Tổng số điểm";
+                    //sheet.Cells["J" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm C";
+
+                    //sheet.Cells["K" + num.ToString() + ":L" + (num).ToString()].Merge = true;
+                    //sheet.Cells["K" + num.ToString()].Value = "Điểm D";
+                    //sheet.Cells["K" + (num + 1).ToString()].Value = "Tổng số điểm";
+                    //sheet.Cells["L" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm D";
+
+                    //sheet.Cells["M" + num.ToString() + ":N" + (num).ToString()].Merge = true;
+                    //sheet.Cells["M" + num.ToString()].Value = "Điểm F";
+                    //sheet.Cells["M" + (num + 1).ToString()].Value = "Tổng số điểm";
+                    //sheet.Cells["N" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm F";
+
+                    //sheet.Cells["O" + num.ToString() + ":O" + (num + 1).ToString()].Merge = true;
+                    //sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
+
+                    sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
+
+                    rowInd = num + 2;
+                    int count = 1;
+                    foreach (var i in list)
+                    {
+                        sheet.Cells[rowInd, 1].Value = count;
+                        sheet.Cells[rowInd, 2].Value = i.studentcode;
+                        sheet.Cells[rowInd, 3].Value = i.studentName;
+                        sheet.Cells[rowInd, 4].Value = i.mark;
+                        //sheet.Cells[rowInd, 5].Value = item.A;
+                        //sheet.Cells[rowInd, 6].Value = item.rateA;
+                        //sheet.Cells[rowInd, 7].Value = item.B;
+                        //sheet.Cells[rowInd, 8].Value = item.rateB;
+                        //sheet.Cells[rowInd, 9].Value = item.C;
+                        //sheet.Cells[rowInd, 10].Value = item.rateC;
+                        //sheet.Cells[rowInd, 11].Value = item.D;
+                        //sheet.Cells[rowInd, 12].Value = item.rateD;
+                        //sheet.Cells[rowInd, 13].Value = item.F;
+                        //sheet.Cells[rowInd, 14].Value = item.rateF;
+                        rowInd++;
+                        count++;
+                    }
+
+                    rowInd += 1;
+                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
+                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
+                    sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
+                    sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
+                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
+                    rowInd++;
+
+                    sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
+                    sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                }
 
                 package.Save();
                 var file = package.GetAsByteArray();

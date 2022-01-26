@@ -716,6 +716,41 @@ namespace PhoDiem_TLU.DatabaseIO
 
 
         }
+        public List<MarksByEnrollmentClass> getMarksEnrollmentClass(List<StudentMarkViewModel> studentMarkViewModels)
+        {
+            var result = (from s in studentMarkViewModels
+                          group s by new { s.enrollmentClassID, s.enrollmentClassName } into list
+
+                          select new
+                          {
+                              departmentID = list.Key.enrollmentClassID,
+                              departmentName = list.Key.enrollmentClassName,
+                              Tong = list.Count(),
+                              A = list.Count(x => x.mark >= 8.45 && x.mark <= 10),
+                              B = list.Count(x => x.mark >= 6.95 && x.mark < 8.45),
+                              C = list.Count(x => x.mark >= 5.45 && x.mark < 6.95),
+                              D = list.Count(x => x.mark >= 3.95 && x.mark < 5.45),
+                              F = list.Count(x => x.mark >= 0 && x.mark < 3.95)
+
+                          }).ToList().Select(x => new MarksByEnrollmentClass(0, x.departmentID, x.departmentName, x.Tong,
+                              x.A,
+                              Math.Round((double)x.A * 100 / x.Tong, 2),
+                              x.B,
+                              Math.Round((double)x.B * 100 / x.Tong, 2),
+                              x.C,
+                              Math.Round((double)x.C * 100 / x.Tong, 2),
+                              x.D,
+                              Math.Round((double)x.D * 100 / x.Tong, 2),
+                              x.F,
+                              Math.Round((double)x.F * 100 / x.Tong, 2)
+                              )).ToList();
+            int i = 1;
+            foreach (MarksByEnrollmentClass item in result)
+            {
+                item.stt = i++;
+            }
+            return result;
+        }
 
         public string getEnrollmentClassName(long? enrollmentClassID)
         {
@@ -825,7 +860,64 @@ namespace PhoDiem_TLU.DatabaseIO
             //}
             //return result;
         }
-        public List<StudentMarkViewModel> getStudentMarkExcel(long? subjectID, long? semesterIDStart, long? semesterIDEnd, long? subject_exam_type_id)
+        public List<StudentMarkViewModel> getStudentMark(long? subjectID, long? semesterIDStart, long? semesterIDEnd)
+        {
+            var studentMarkViewModels = (from semeter in models.tbl_semester
+                                         join semesterSubject in models.tbl_semester_subject
+                                         on semeter.id equals semesterSubject.semester_id
+
+                                         join subject in models.tbl_subject
+                                         on semesterSubject.subject_id equals subject.id
+
+                                         join courseSubject in models.tbl_course_subject
+                                         on semesterSubject.id equals courseSubject.semester_subject_id
+
+                                         join studentCourseSubject in models.tbl_student_course_subject
+                                         on courseSubject.id equals studentCourseSubject.course_subject_id
+
+                                         join student in models.tbl_student
+                                         on studentCourseSubject.student_id equals student.id
+
+                                         join studentSubjectMark in models.tbl_student_subject_mark
+                                         on student.id equals studentSubjectMark.student_id
+
+                                         join person in models.tbl_person
+                                         on courseSubject.teacher_id equals person.id
+
+                                         join enrollmentClass in models.tbl_enrollment_class
+                                         on student.class_id equals enrollmentClass.id
+
+                                         join department in models.tbl_department
+                                         on enrollmentClass.department_id equals department.id
+
+                                         where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
+                                         && subject.id == subjectID
+                                         && studentSubjectMark.subject_id == subjectID
+                                         && studentSubjectMark.semester_id == semeter.id
+
+                                         select new
+                                         {
+                                             studentID = student.id,
+                                             studentCode = student.student_code,
+                                             mark = studentSubjectMark.mark,
+                                             courseSubjectID = courseSubject.id,
+                                             courseSubjectName = courseSubject.display_name,
+                                             teacherID = courseSubject.teacher_id,
+                                             teacherName = person.display_name,
+                                             enrollmentClassID = enrollmentClass.id,
+                                             enrollmentClassName = enrollmentClass.className,
+                                             departmentID = department.id,
+                                             departmentName = department.name
+
+                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentCode, x.mark, x.courseSubjectID,
+                                         x.courseSubjectName, x.teacherID, x.teacherName, x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
+
+                                         )).ToList();
+
+            return studentMarkViewModels;
+        }
+        public List<StudentMarkViewModel> getStudentMarkExcelDepartment(long? subjectID, long? semesterIDStart,
+            long? semesterIDEnd, long? subject_exam_type_id, List<long?> iDCheckeds)
         {
             var studentMarkViewModels = (from semeter in models.tbl_semester
                                          join semesterSubject in models.tbl_semester_subject
@@ -858,6 +950,9 @@ namespace PhoDiem_TLU.DatabaseIO
                                          join department in models.tbl_department
                                          on enrollmentClass.department_id equals department.id
 
+                                         join long numcheckedList in iDCheckeds
+                                         on department.id equals numcheckedList
+
                                          where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
                                          && subject.id == subjectID
                                          && studentMark.subject_id == subjectID
@@ -877,8 +972,333 @@ namespace PhoDiem_TLU.DatabaseIO
                                              departmentID = department.id,
                                              departmentName = department.name
 
-                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID,x.studentName, x.studentCode, x.mark, x.courseSubjectID,
-                                         x.courseSubjectName, x.teacherID,x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
+                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
+                                         x.studentCode, x.mark, x.courseSubjectID,
+                                         x.courseSubjectName, x.teacherID,x.enrollmentClassID,
+                                         x.enrollmentClassName, x.departmentID, x.departmentName
+
+                                         )).ToList();
+
+            return studentMarkViewModels;
+        }
+        public List<StudentMarkViewModel> getStudentMarkExcelDepartment(long? subjectID, long? semesterIDStart, 
+            long? semesterIDEnd, List<long?> iDCheckeds)
+        {
+            var studentMarkViewModels = (from semeter in models.tbl_semester
+                                         join semesterSubject in models.tbl_semester_subject
+                                         on semeter.id equals semesterSubject.semester_id
+
+                                         join subject in models.tbl_subject
+                                         on semesterSubject.subject_id equals subject.id
+
+                                         join courseSubject in models.tbl_course_subject
+                                         on semesterSubject.id equals courseSubject.semester_subject_id
+
+                                         join studentCourseSubject in models.tbl_student_course_subject
+                                         on courseSubject.id equals studentCourseSubject.course_subject_id
+
+                                         join student in models.tbl_student
+                                         on studentCourseSubject.student_id equals student.id
+
+                                         join studentSubjectMark in models.tbl_student_subject_mark
+                                         on student.id equals studentSubjectMark.student_id
+
+                                         join person in models.tbl_person
+                                         on student.id equals person.id
+
+                                         join enrollmentClass in models.tbl_enrollment_class
+                                         on student.class_id equals enrollmentClass.id
+
+                                         join department in models.tbl_department
+                                         on enrollmentClass.department_id equals department.id
+
+                                         join long numcheckedList in iDCheckeds
+                                         on department.id equals numcheckedList
+
+                                         where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
+                                         && subject.id == subjectID
+                                         && studentSubjectMark.subject_id == subjectID
+                                         && studentSubjectMark.semester_id == semeter.id
+
+                                         select new
+                                         {
+                                             studentID = student.id,
+                                             studentName = person.display_name,
+                                             studentCode = student.student_code,
+                                             mark = studentSubjectMark.mark,
+                                             courseSubjectID = courseSubject.id,
+                                             courseSubjectName = courseSubject.display_name,
+                                             teacherID = courseSubject.teacher_id,
+                                             enrollmentClassID = enrollmentClass.id,
+                                             enrollmentClassName = enrollmentClass.className,
+                                             departmentID = department.id,
+                                             departmentName = department.name
+
+                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
+                                         x.studentCode, x.mark, x.courseSubjectID,
+                                         x.courseSubjectName, x.teacherID,
+                                         x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
+
+                                         )).ToList();
+
+            return studentMarkViewModels;
+        }
+        public List<StudentMarkViewModel> getStudentMarkExcelTeacher(long? subjectID, long? semesterIDStart, long? semesterIDEnd, long? subject_exam_type_id, List<long?> iDCheckeds)
+        {
+            var studentMarkViewModels = (from semeter in models.tbl_semester
+                                         join semesterSubject in models.tbl_semester_subject
+                                         on semeter.id equals semesterSubject.semester_id
+
+                                         join subject in models.tbl_subject
+                                         on semesterSubject.subject_id equals subject.id
+
+                                         join courseSubject in models.tbl_course_subject
+                                         on semesterSubject.id equals courseSubject.semester_subject_id
+
+                                         join studentCourseSubject in models.tbl_student_course_subject
+                                         on courseSubject.id equals studentCourseSubject.course_subject_id
+
+                                         join student in models.tbl_student
+                                         on studentCourseSubject.student_id equals student.id
+
+                                         join studentMark in models.tbl_student_mark
+                                         on student.id equals studentMark.student_id
+
+                                         join person in models.tbl_person
+                                         on student.id equals person.id
+
+                                         join personTeacher in models.tbl_person
+                                         on courseSubject.teacher_id equals personTeacher.id
+
+                                         join subjectExam in models.tbl_subject_exam
+                                         on studentMark.subject_exam_id equals subjectExam.id
+
+                                         join enrollmentClass in models.tbl_enrollment_class
+                                         on student.class_id equals enrollmentClass.id
+
+                                         join department in models.tbl_department
+                                         on enrollmentClass.department_id equals department.id
+
+                                         join long numcheckedList in iDCheckeds
+                                         on courseSubject.teacher_id equals numcheckedList
+
+                                         where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
+                                         && subject.id == subjectID
+                                         && studentMark.subject_id == subjectID
+                                         && subjectExam.subject_exam_type_id == subject_exam_type_id
+
+                                         select new
+                                         {
+                                             studentID = student.id,
+                                             studentName = person.display_name,
+                                             studentCode = student.student_code,
+                                             mark = studentMark.mark,
+                                             courseSubjectID = courseSubject.id,
+                                             courseSubjectName = courseSubject.display_name,
+                                             teacherID = courseSubject.teacher_id,
+                                             teacherName = personTeacher.display_name,
+                                             enrollmentClassID = enrollmentClass.id,
+                                             enrollmentClassName = enrollmentClass.className,
+                                             departmentID = department.id,
+                                             departmentName = department.name
+
+                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
+                                         x.studentCode, x.mark, x.courseSubjectID,
+                                         x.courseSubjectName, x.teacherID,x.teacherName, x.enrollmentClassID,
+                                         x.enrollmentClassName, x.departmentID, x.departmentName
+
+                                         )).ToList();
+
+            return studentMarkViewModels;
+        }
+        public List<StudentMarkViewModel> getStudentMarkExcelTeacher(long? subjectID, long? semesterIDStart, long? semesterIDEnd, List<long?> iDCheckeds)
+        {
+            var studentMarkViewModels = (from semeter in models.tbl_semester
+                                         join semesterSubject in models.tbl_semester_subject
+                                         on semeter.id equals semesterSubject.semester_id
+
+                                         join subject in models.tbl_subject
+                                         on semesterSubject.subject_id equals subject.id
+
+                                         join courseSubject in models.tbl_course_subject
+                                         on semesterSubject.id equals courseSubject.semester_subject_id
+
+                                         join studentCourseSubject in models.tbl_student_course_subject
+                                         on courseSubject.id equals studentCourseSubject.course_subject_id
+
+                                         join student in models.tbl_student
+                                         on studentCourseSubject.student_id equals student.id
+
+                                         join studentSubjectMark in models.tbl_student_subject_mark
+                                         on student.id equals studentSubjectMark.student_id
+
+                                         join person in models.tbl_person
+                                         on student.id equals person.id
+
+                                         join personTeacher in models.tbl_person
+                                         on courseSubject.teacher_id equals personTeacher.id
+
+                                         join enrollmentClass in models.tbl_enrollment_class
+                                         on student.class_id equals enrollmentClass.id
+
+                                         join department in models.tbl_department
+                                         on enrollmentClass.department_id equals department.id
+
+                                         join long numcheckedList in iDCheckeds
+                                         on courseSubject.teacher_id equals numcheckedList
+
+                                         where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
+                                         && subject.id == subjectID
+                                         && studentSubjectMark.subject_id == subjectID
+                                         && studentSubjectMark.semester_id == semeter.id
+
+                                         select new
+                                         {
+                                             studentID = student.id,
+                                             studentName = person.display_name,
+                                             studentCode = student.student_code,
+                                             mark = studentSubjectMark.mark,
+                                             courseSubjectID = courseSubject.id,
+                                             courseSubjectName = courseSubject.display_name,
+                                             teacherID = courseSubject.teacher_id,
+                                             teacherName = personTeacher.display_name,
+                                             enrollmentClassID = enrollmentClass.id,
+                                             enrollmentClassName = enrollmentClass.className,
+                                             departmentID = department.id,
+                                             departmentName = department.name
+
+                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
+                                         x.studentCode, x.mark, x.courseSubjectID,
+                                         x.courseSubjectName, x.teacherID,x.teacherName,
+                                         x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
+
+                                         )).ToList();
+
+            return studentMarkViewModels;
+        }
+        public List<StudentMarkViewModel> getStudentMarkExcelEnrollmentClass(long? subjectID, long? semesterIDStart,
+            long? semesterIDEnd, long? subject_exam_type_id, List<long?> iDCheckeds)
+        {
+            var studentMarkViewModels = (from semeter in models.tbl_semester
+                                         join semesterSubject in models.tbl_semester_subject
+                                         on semeter.id equals semesterSubject.semester_id
+
+                                         join subject in models.tbl_subject
+                                         on semesterSubject.subject_id equals subject.id
+
+                                         join courseSubject in models.tbl_course_subject
+                                         on semesterSubject.id equals courseSubject.semester_subject_id
+
+                                         join studentCourseSubject in models.tbl_student_course_subject
+                                         on courseSubject.id equals studentCourseSubject.course_subject_id
+
+                                         join student in models.tbl_student
+                                         on studentCourseSubject.student_id equals student.id
+
+                                         join studentMark in models.tbl_student_mark
+                                         on student.id equals studentMark.student_id
+
+                                         join person in models.tbl_person
+                                         on student.id equals person.id
+
+                                         join subjectExam in models.tbl_subject_exam
+                                         on studentMark.subject_exam_id equals subjectExam.id
+
+                                         join enrollmentClass in models.tbl_enrollment_class
+                                         on student.class_id equals enrollmentClass.id
+
+                                         join department in models.tbl_department
+                                         on enrollmentClass.department_id equals department.id
+
+                                         join long numcheckedList in iDCheckeds
+                                         on enrollmentClass.id equals numcheckedList
+
+                                         where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
+                                         && subject.id == subjectID
+                                         && studentMark.subject_id == subjectID
+                                         && subjectExam.subject_exam_type_id == subject_exam_type_id
+
+                                         select new
+                                         {
+                                             studentID = student.id,
+                                             studentName = person.display_name,
+                                             studentCode = student.student_code,
+                                             mark = studentMark.mark,
+                                             courseSubjectID = courseSubject.id,
+                                             courseSubjectName = courseSubject.display_name,
+                                             teacherID = courseSubject.teacher_id,
+                                             enrollmentClassID = enrollmentClass.id,
+                                             enrollmentClassName = enrollmentClass.className,
+                                             departmentID = department.id,
+                                             departmentName = department.name
+
+                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
+                                         x.studentCode, x.mark, x.courseSubjectID,
+                                         x.courseSubjectName, x.teacherID, x.enrollmentClassID,
+                                         x.enrollmentClassName, x.departmentID, x.departmentName
+
+                                         )).ToList();
+
+            return studentMarkViewModels;
+        }
+        public List<StudentMarkViewModel> getStudentMarkExcelEnrollmentClass(long? subjectID, long? semesterIDStart,
+            long? semesterIDEnd, List<long?> iDCheckeds)
+        {
+            var studentMarkViewModels = (from semeter in models.tbl_semester
+                                         join semesterSubject in models.tbl_semester_subject
+                                         on semeter.id equals semesterSubject.semester_id
+
+                                         join subject in models.tbl_subject
+                                         on semesterSubject.subject_id equals subject.id
+
+                                         join courseSubject in models.tbl_course_subject
+                                         on semesterSubject.id equals courseSubject.semester_subject_id
+
+                                         join studentCourseSubject in models.tbl_student_course_subject
+                                         on courseSubject.id equals studentCourseSubject.course_subject_id
+
+                                         join student in models.tbl_student
+                                         on studentCourseSubject.student_id equals student.id
+
+                                         join studentSubjectMark in models.tbl_student_subject_mark
+                                         on student.id equals studentSubjectMark.student_id
+
+                                         join person in models.tbl_person
+                                         on student.id equals person.id
+
+
+                                         join enrollmentClass in models.tbl_enrollment_class
+                                         on student.class_id equals enrollmentClass.id
+
+                                         join department in models.tbl_department
+                                         on enrollmentClass.department_id equals department.id
+
+                                         join long numcheckedList in iDCheckeds
+                                         on enrollmentClass.id equals numcheckedList
+
+                                         where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
+                                         && subject.id == subjectID
+                                         && studentSubjectMark.subject_id == subjectID
+                                         && studentSubjectMark.semester_id == semeter.id
+
+                                         select new
+                                         {
+                                             studentID = student.id,
+                                             studentName = person.display_name,
+                                             studentCode = student.student_code,
+                                             mark = studentSubjectMark.mark,
+                                             courseSubjectID = courseSubject.id,
+                                             courseSubjectName = courseSubject.display_name,
+                                             teacherID = courseSubject.teacher_id,
+                                             enrollmentClassID = enrollmentClass.id,
+                                             enrollmentClassName = enrollmentClass.className,
+                                             departmentID = department.id,
+                                             departmentName = department.name
+
+                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
+                                         x.studentCode, x.mark, x.courseSubjectID,
+                                         x.courseSubjectName, x.teacherID,
+                                         x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
 
                                          )).ToList();
 

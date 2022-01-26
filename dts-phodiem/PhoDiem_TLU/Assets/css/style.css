@@ -368,11 +368,10 @@ a.article:hover {
 }
 
 /* Xuất file*/
-.download {
-    outline: none;
-    border: none;
-    background-color: transparent;
+tbody tr td:last-child{
 }
-.download i {
-    font-size:20px;
+tbody tr td:last-child input{
+    position:unset;
+    height:20px;
+    width:20px;
 }

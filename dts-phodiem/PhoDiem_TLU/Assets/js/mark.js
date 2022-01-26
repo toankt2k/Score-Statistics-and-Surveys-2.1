@@ -5,6 +5,7 @@
     var table = $("#table_id_department").DataTable({
         "processing": true,
     });
+    handlerExport()
         
 })
 const Marks = (function (){
@@ -57,7 +58,7 @@ function handlefilter() {
 });
     $('form').submit(function (even) {
         event.preventDefault(); // <- avoid reloading
-        console.log("oke")
+        
         if (even.originalEvent.submitter.value == 'Hiển thị') {
         $.ajax({
             method: $(this).attr('method'),
@@ -76,21 +77,15 @@ function handlefilter() {
         }).done(function (response) {
             if (response != null) {
                 if (response.code == 200) {
-                    
-
-                    console.log(response)
-                    /*DataExcel.setData(response.dataExcel)*/
                     dataMark = null
-                    
                     Marks.setData(response.dataTable)
                     Selected.setData(response.subjectID, response.semesterIDStart, response.semesterIDEnd, response.showoption, response.markOption);
-                    console.log(Marks.getAllData())
+                    
                     fillDataToChart(response.dataTable, response.showoption);
                     fillDataToChartPie(response.sumMark);
                     ok = true;
-                    
                     showHandler(response.showoption, response.markOption)
-                    handlerExport()
+                    $('input[name="checkboxExport[]"]').prop('checked',false)
                 }
                 else {
                     console.log(response);
@@ -117,15 +112,15 @@ function showHandler(showOption, markOption) {
                 return {
                     
                     stt, departmentName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
-                    'checkbox': `<div class="form-check">
+                    'checkbox': `
                                   <input class="form-check-input" type="checkbox" name="checkboxExport[]" value="${departmentID}">
                                   
-                                </div>`,
+                                `,
                 }
             })
             
             data = data.map(Object.values)
-            console.log(data)
+            
             $("#table_id_department").DataTable().clear();
             $("#table_id_department").DataTable().rows.add(data);
             $("#table_id_department").DataTable().draw();
@@ -136,10 +131,13 @@ function showHandler(showOption, markOption) {
         else if (showOption === "HTGV") {
             var marks = Marks.getAllData()
             var data = marks.map(data => {
-                var { stt, teacherName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = data
+                var { stt, teacherID, teacherName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = data
                 return {
                     stt, teacherName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
-                    'button': `<button onclick= "handleExportTeacher(${stt},'${markOption}')" class="download export"><i class="fa fa-download" aria-hidden="true"></i></button>`
+                    'checkbox': `
+                                  <input class="form-check-input" type="checkbox" name="checkboxExport[]" value="${teacherID}">
+                                  
+                                `,
                 }
             })
 
@@ -153,14 +151,18 @@ function showHandler(showOption, markOption) {
         }
         else {
             var marks = Marks.getAllData()
-            var data = marks.map(data => {
-                var { stt, subjectName, enrollmentClassName, sum, A,rateA,B,rateB,C,rateC,D,rateD,F,rateF} = data
+            var data = marks.map(dataItem => {
+                var { stt, enrollmentClassID, enrollmentClassName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = dataItem
                 return {
-                    stt, subjectName, enrollmentClassName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
-                    'button': `<button onclick= "handleExportEnrollmentClass(${stt},'${markOption}')" class="download export"><i class="fa fa-download" aria-hidden="true"></i></button>`
+
+                    stt, enrollmentClassName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
+                    'checkbox': `
+                                  <input class="form-check-input" type="checkbox" name="checkboxExport[]" value="${enrollmentClassID}">
+                                  
+                                `,
                 }
             })
-           
+
             data = data.map(Object.values)
             $("#table_id_enrollmentClass").DataTable().clear();
             $("#table_id_enrollmentClass").DataTable().rows.add(data);
@@ -173,19 +175,20 @@ function showHandler(showOption, markOption) {
     }
 }
 function handlerExport() {
-    selected = Selected.getData()
-    var { subjectID, semesterIDStart, semesterIDEnd, showOption, markOption, } = selected
+    
     var submitBtn = $('#export__btn-id')
-    var checkboxIDs = []
+    
     submitBtn.click(function (e) {
         e.preventDefault()
-
+        selected = Selected.getData()
+        var { subjectID, semesterIDStart, semesterIDEnd, showOption, markOption, } = selected
+        var checkboxIDs = []
         $('input[name="checkboxExport[]"]:checked').each(function () {
             checkboxIDs.push(
-                $(this).val()
+                parseInt($(this).val())
             )
         });
-        console.log(checkboxIDs);
+        console.log(subjectID, semesterIDStart, semesterIDEnd, showOption, markOption,checkboxIDs);
         if (checkboxIDs.length > 0) {
 
             $.post("../Mark/Export", {
@@ -196,6 +199,7 @@ function handlerExport() {
                 markOption,
                 checkboxIDs
             }, function (data) {
+                console.log(data)
                 if (data.code == 200) {
                     var bytes = Base64ToBytes(data.result)
                     var a = window.document.createElement('a')
@@ -207,86 +211,12 @@ function handlerExport() {
                     document.body.appendChild(a)
                     a.click();
                     document.body.removeChild(a)
+                    
                 }
                 else alert("Lỗi khi xuất file")
             })
         }
-    })
-}
-function handleExportDepartment(stt, markOption) {
-    var mark = Marks.getData(stt)
-    console.log(mark.subjectID, mark.startYearID, mark.endYearID, mark.departmentID, markOption)
-    $.post("../Mark/ExportFileDepartment", {
-        subject_id: mark.subjectID,
-        school_year_id_start: mark.startYearID,
-        school_year_id_end: mark.endYearID,
-        departmentID: mark.departmentID,
-        markOption: markOption
-    }, function (data) {
-        if (data.code == 200) {
-            var bytes = Base64ToBytes(data.result)
-            var a = window.document.createElement('a')
-
-            a.href = window.URL.createObjectURL(new Blob([bytes], { type: 'application/xlsx' }))
-
-            a.download = `${data.fileName}`
-
-            document.body.appendChild(a)
-            a.click();
-            document.body.removeChild(a)
-        }
-        else alert("Lỗi khi xuất file")
-    })
-}
-function handleExportTeacher(stt, markOption) {
-    var mark = Marks.getData(stt)
-    console.log(mark.subjectID, mark.startYearID, mark.endYearID, mark.teacherID, markOption)
-    $.post("../Mark/ExportFileTeacher", {
-        subject_id: mark.subjectID,
-        school_year_id_start: mark.startYearID,
-        school_year_id_end: mark.endYearID,
-        teacherID: mark.teacherID,
-        markOption: markOption
-    }, function (data) {
-        if (data.code == 200) {
-            var bytes = Base64ToBytes(data.result)
-            var a = window.document.createElement('a')
-
-            a.href = window.URL.createObjectURL(new Blob([bytes], { type: 'application/xlsx' }))
-
-            a.download = `${data.fileName}`
-
-            document.body.appendChild(a)
-            a.click();
-            document.body.removeChild(a)
-        }
-        else alert("Lỗi khi xuất file")
-    })
-}
-function handleExportEnrollmentClass(stt,markOption) {
-    
-    var mark = Marks.getData(stt)
-    console.log(mark)
-    $.post("../Mark/ExportFileEnrollmentClass", {
-        subject_id: mark.subjectID,
-        school_year_id_start: mark.startYear,
-        school_year_id_end: mark.endYear,
-        enrollmentClassID: mark.enrollmentClassID,
-        markOption: markOption
-    }, function (data) {
-        if (data.code == 200) {
-            var bytes = Base64ToBytes(data.result)
-            var a = window.document.createElement('a')
-
-            a.href = window.URL.createObjectURL(new Blob([bytes], { type: 'application/xlsx' }))
-
-            a.download = `${data.fileName}`
-
-            document.body.appendChild(a)
-            a.click();
-            document.body.removeChild(a)
-        }
-        else alert("Lỗi khi xuất file")
+        else alert("Chọn hàng cần xuất dữ liệu")
     })
 }
 function Base64ToBytes(base64) {
