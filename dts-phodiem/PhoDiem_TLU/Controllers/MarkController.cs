@@ -25,13 +25,13 @@ namespace PhoDiem_TLU.Controllers
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(typeof(MarkController));
         public ActionResult Index()
         {
-            setViewbag();
+            setViewbagMarkOption();
             return View();
         }
-        private void setViewbag()
+        private void setViewbagMarkOption()
         {
             var subject = dBIO.getSubject();
-            var years = dBIO.getYear();
+            var semesters = dBIO.GetSemesters();
             List<SelectListItem> provinces = new List<SelectListItem>();
             provinces.Add(new SelectListItem() { Text = "Hiển thị theo khoa", Value = "HTK" });
             provinces.Add(new SelectListItem() { Text = "Hiển thị theo giáo viên", Value = "HTGV" });
@@ -44,57 +44,71 @@ namespace PhoDiem_TLU.Controllers
             SelectList showOption = new SelectList(provinces, "Value", "Text");
             SelectList markOption = new SelectList(listOption, "Value", "Text");
             SelectList s = new SelectList(subject, "id", "subject_name");
-            SelectList y = new SelectList(years, "id", "year");
-            ViewBag.subject = s;
-            ViewBag.years = y;
+            SelectList y = new SelectList(semesters, "id", "semester_name");
+            ViewBag.subjects = s;
+            ViewBag.semesters = y;
             ViewBag.showOption = showOption;
             ViewBag.markOption = markOption;
         }
         [HttpPost]
 
-        public JsonResult MarkResult(long? subject_id, long? school_year_id_start, long? school_year_id_end, string showoption, string markOption)
+        public JsonResult MarkResult(long? subjectID, long? semesterIDStart, long? semesterIDEnd, string showoption, string markOption)
         {
 
             try
             {
 
-                if (subject_id != null && school_year_id_start != null && school_year_id_end != null && showoption != null && markOption != null)
+                if (subjectID != null && semesterIDStart != null && semesterIDEnd != null && showoption != null && markOption != null)
                 {
 
                     if (showoption == "HTK")
                     {
                         if (markOption == "Điểm quá trình")
                         {
-                            var data = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end, 2);
-                            var sumMark = dBIO.getSumMarks(data);
+                            var studentMarks = dBIO.getStudentMark(subjectID, semesterIDStart, semesterIDEnd, 2);
+                            //var dataExcel = dBIO.groupMarkByDepartment(studentMarks);
+                            var dataTable = dBIO.getMarkByDepartment(studentMarks);
+                            var sumMark = dBIO.getSumMarks(dataTable);
                             return Json(new
                             {
                                 code = 200,
-                                data,
-                                showoption,
-                                markOption,
+                                //studentMarks,
+                                //dataExcel,
+                                dataTable,
                                 sumMark,
+                                subjectID,
+                                semesterIDStart,
+                                semesterIDEnd,
+                                showoption,
+                                markOption
 
                             }, JsonRequestBehavior.AllowGet);
                         }
                         else if (markOption == "Điểm thi")
                         {
-                            var data = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end, 3);
-                            var sumMark = dBIO.getSumMarks(data);
+                            var studentMarks = dBIO.getStudentMark(subjectID, semesterIDStart, semesterIDEnd, 3);
+                            //var dataExcel = dBIO.groupMarkByDepartment(studentMarks);
+                            var dataTable = dBIO.getMarkByDepartment(studentMarks);
+                            var sumMark = dBIO.getSumMarks(dataTable);
                             return Json(new
                             {
                                 code = 200,
-                                data,
-                                showoption,
-                                markOption,
+                                //studentMarks,
+                                //dataExcel,
+                                dataTable,
                                 sumMark,
+                                subjectID,
+                                semesterIDStart,
+                                semesterIDEnd,
+                                showoption,
+                                markOption
 
                             }, JsonRequestBehavior.AllowGet);
                         }
                         else
                         {
                             //Diem tong ket
-                            var data = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end);
+                            var data = dBIO.getMarksByDepartMent(subjectID, semesterIDStart, semesterIDEnd);
                             var sumMark = dBIO.getSumMarks(data);
                             return Json(new
                             {
@@ -110,41 +124,52 @@ namespace PhoDiem_TLU.Controllers
                     }
                     else if (showoption == "HTGV")
                     {
-                        List<StudentCourseSubject> studentCourseSubjects = dBIO.getMarks_2(subject_id, school_year_id_start, school_year_id_end);
-
                         if (markOption == "Điểm quá trình")
                         {
 
-                            var data = dBIO.getMarkByTeacher(studentCourseSubjects, 2);
-                            var sumMark = dBIO.getSumMarks(data);
+                            var studentMarks = dBIO.getStudentMark(subjectID, semesterIDStart, semesterIDEnd, 2);
+                            //var dataExcel = dBIO.groupMarkByTeacher(studentMarks);
+                            var dataTable = dBIO.getMarkByTeacher(studentMarks);
+                            var sumMark = dBIO.getSumMarks(dataTable);
                             return Json(new
                             {
                                 code = 200,
-                                data,
-                                showoption,
-                                markOption,
+                                //studentMarks,
+                                //dataExcel,
+                                dataTable,
                                 sumMark,
+                                subjectID,
+                                semesterIDStart,
+                                semesterIDEnd,
+                                showoption,
+                                markOption
 
                             }, JsonRequestBehavior.AllowGet);
                         }
                         else if (markOption == "Điểm thi")
                         {
-                            var data = dBIO.getMarkByTeacher(studentCourseSubjects, 3);
-                            var sumMark = dBIO.getSumMarks(data);
-
+                            var studentMarks = dBIO.getStudentMark(subjectID, semesterIDStart, semesterIDEnd, 3);
+                            //var dataExcel = dBIO.groupMarkByTeacher(studentMarks);
+                            var dataTable = dBIO.getMarkByTeacher(studentMarks);
+                            var sumMark = dBIO.getSumMarks(dataTable);
                             return Json(new
                             {
                                 code = 200,
-                                data,
-                                showoption,
-                                markOption,
+                                //studentMarks,
+                                //dataExcel,
+                                dataTable,
                                 sumMark,
+                                subjectID,
+                                semesterIDStart,
+                                semesterIDEnd,
+                                showoption,
+                                markOption
 
                             }, JsonRequestBehavior.AllowGet);
                         }
                         else
                         {
-                            var list = dBIO.getMarks(subject_id, school_year_id_start, school_year_id_end);
+                            var list = dBIO.getMarks(subjectID, semesterIDStart, semesterIDEnd);
                             var data = dBIO.getMarkByTeacher(list);
                             var sumMark = dBIO.getSumMarks(data);
                             return Json(new
@@ -163,7 +188,7 @@ namespace PhoDiem_TLU.Controllers
                     {
                         if (markOption == "Điểm quá trình")
                         {
-                            var data = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end, 2);
+                            var data = dBIO.getMarksEnrollmentClass(subjectID, semesterIDStart, semesterIDEnd, 2);
                             var sumMark = dBIO.getSumMarks(data);
                             //var test = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end);
                             //var test1 = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end,3);
@@ -179,7 +204,7 @@ namespace PhoDiem_TLU.Controllers
                         }
                         else if (markOption == "Điểm thi")
                         {
-                            var data = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end, 3);
+                            var data = dBIO.getMarksEnrollmentClass(subjectID, semesterIDStart, semesterIDEnd, 3);
                             var sumMark = dBIO.getSumMarks(data);
                             return Json(new
                             {
@@ -194,7 +219,7 @@ namespace PhoDiem_TLU.Controllers
                         else
                         {
                             //Diem tong ket
-                            var data = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end);
+                            var data = dBIO.getMarksEnrollmentClass(subjectID, semesterIDStart, semesterIDEnd);
                             var sumMark = dBIO.getSumMarks(data);
                             return Json(new
                             {
@@ -221,120 +246,170 @@ namespace PhoDiem_TLU.Controllers
         }
 
         [HttpPost]
-        public ActionResult Export(long? subject_id, long? school_year_id_start, long? school_year_id_end, string showoption, string markOption)
-        {
-            if (subject_id != null && school_year_id_start != null &&
-                school_year_id_end != null && showoption != null && markOption != null)
-            {
-                long startYear = dBIO.getYear(school_year_id_start);
-                long EndYear = dBIO.getYear(school_year_id_end);
-                string subjectName = dBIO.getSubject(subject_id);
-                long numberOfCredit = dBIO.getNumberOfCredit(subject_id);
-                if (showoption == "HTK")
-                {
-                    List<MarkByDepartment> dataMark;
-                    if (markOption == "Điểm quá trình")
-                    {
-                        dataMark = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end, 2);
-                    }
-                    else if (markOption == "Điểm thi")
-                    {
-                        dataMark = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end, 3);
-                    }
-                    else
-                    {
-                        //Diem tong ket
-                        dataMark = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end);
+        public JsonResult Export(long? subjectID, long? semesterIDStart, long? semesterIDEnd, string showoption, string markOption, List<long?> checkboxIDs)
 
-                    }
-                    var fileName = $"{markOption}_{subjectName}_{startYear}-{EndYear}.xlsx";
-                    var data = ex.ExportExcelDataDepartment(markOption, subjectName, numberOfCredit, startYear, EndYear, dataMark);
-                    return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
-                }
-                else if (showoption == "HTGV")
-                {
-                    List<StudentCourseSubject> studentCourseSubjects
-                        = dBIO.getMarks_2(subject_id, school_year_id_start, school_year_id_end);
-                    List<MarkRate> dataMark;
-                    if (markOption == "Điểm thi")
-                    {
-                        dataMark = dBIO.getMarkByTeacher(studentCourseSubjects, 3);
-                    }
-                    else if (markOption == "Điểm quá trình")
-                    {
-                        dataMark = dBIO.getMarkByTeacher(studentCourseSubjects, 2);
-                    }
-                    else
-                    {
-                        var list = dBIO.getMarks(subject_id, school_year_id_start, school_year_id_end);
-                        dataMark = dBIO.getMarkByTeacher(list);
-                        
-                    }
-                    var fileName = $"{markOption}_{subjectName}_{startYear}-{EndYear}.xlsx";
-                    var data = ex.ExportExcelDataTeacher(markOption, subjectName, numberOfCredit, startYear, EndYear, dataMark,1);
-                    return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
-
-                }
-                else
-                {
-                    List<MarksByEnrollmentClass> dataMark;
-                    if (markOption == "Điểm quá trình")
-                    {
-                        dataMark = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end, 2);
-                    }
-                    else if (markOption == "Điểm thi")
-                    {
-                        dataMark = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end, 3);
-                    }
-                    else
-                    {
-                        //Diem tong ket
-                        dataMark = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end);
-
-                    }
-                    var fileName = $"{markOption}_{subjectName}_{startYear}-{EndYear}.xlsx";
-                    var data = ex.ExportExcelDataEnrollmentClass(markOption, subjectName, numberOfCredit, startYear, EndYear, dataMark);
-                    return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
-                }
-            }
-            else return RedirectToAction("Index");
-        }
-        [HttpPost]
-        public JsonResult ExportFileDepartment(long? subject_id, long? school_year_id_start, long? school_year_id_end,
-            long? departmentID, string markOption)
         {
             try
             {
-                List<MarkByDepartment> dataMark;
-                long startYear = dBIO.getYear(school_year_id_start);
-                long EndYear = dBIO.getYear(school_year_id_end);
-                string subjectName = dBIO.getSubject(subject_id);
-                long numberOfCredit = dBIO.getNumberOfCredit(subject_id);
-                string departmentName = dBIO.getDepartmentName(departmentID);
-                if (markOption == "Điểm quá trình")
-                {
-                    dataMark = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end, 2, departmentID);
-                }
-                else if (markOption == "Điểm thi")
-                {
-                    dataMark = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end, 3, departmentID);
-                }
-                else
-                {
-                    //Diem tong ket
-                    dataMark = dBIO.getStudentMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end ,departmentID);
 
+                if (subjectID != null && semesterIDStart != null && semesterIDEnd != null && showoption != null && markOption != null)
+                {
+
+                    if (showoption == "HTK")
+                    {
+                        string subjectName = dBIO.getSubject(subjectID);
+                        long numberOfCredit = dBIO.getNumberOfCredit(subjectID);
+                        string semesterNameStart = dBIO.getSemeterName(semesterIDStart);
+                        string semesterNameEnd = dBIO.getSemeterName(semesterIDEnd);
+                        List<StudentMarkViewModel> studentMarks;
+                        List<MarkByDepartment> dataTable;
+                        if (markOption == "Điểm quá trình")
+                        {
+                            studentMarks = dBIO.getStudentMarkExcel(subjectID, semesterIDStart, semesterIDEnd, 2);
+                            //var dataExcel = dBIO.groupMarkByDepartment(studentMarks);
+                            dataTable = dBIO.getMarkByDepartment(studentMarks);
+                            //var sumMark = dBIO.getSumMarks(data);
+
+                        }
+                        else if (markOption == "Điểm thi")
+                        {
+                             studentMarks = dBIO.getStudentMarkExcel(subjectID, semesterIDStart, semesterIDEnd, 3);
+                             dataTable = dBIO.getMarkByDepartment(studentMarks);
+                        }
+                        else
+                        {
+                            //Diem tong ket
+                            //dataMark = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end);
+                            studentMarks = new List<StudentMarkViewModel>();
+                            dataTable = new List<MarkByDepartment>();
+                        }
+                        var fileName = $"{markOption}_{subjectName}_{semesterNameStart}_{semesterNameEnd}.xlsx";
+                        var data = ex.ExportExcelDataDepartment(markOption, subjectName, numberOfCredit,semesterNameStart,semesterNameEnd,studentMarks,dataTable);
+                        return Json(new { code = 200, fileName, result = Convert.ToBase64String(data) }, JsonRequestBehavior.AllowGet);
+
+
+                    }
+                    return Json(new { code = 404 }, JsonRequestBehavior.AllowGet);
                 }
-                var fileName = $"{markOption}_{subjectName}_{departmentName}_{startYear}-{EndYear}.xlsx";
-                var data = ex.ExportExcelDataDepartment(markOption, subjectName, numberOfCredit, departmentName, startYear, EndYear, dataMark);
-                return Json(new { code = 200, fileName, departmentName, result = Convert.ToBase64String(data) }, JsonRequestBehavior.AllowGet);
-                //return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                return Json(new { code = 404 }, JsonRequestBehavior.AllowGet);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                return Json(new { code = 500, }, JsonRequestBehavior.AllowGet);
+                log.Error(e.Message);
+                return Json(new { code = 404, msg = e.Message }, JsonRequestBehavior.AllowGet);
             }
+            //if (subject_id != null && school_year_id_start != null &&
+            //    school_year_id_end != null && showoption != null && markOption != null)
+            //{
+            //    long startYear = dBIO.getYear(school_year_id_start);
+            //    long EndYear = dBIO.getYear(school_year_id_end);
+            //    string subjectName = dBIO.getSubject(subject_id);
+            //    long numberOfCredit = dBIO.getNumberOfCredit(subject_id);
+            //    if (showoption == "HTK")
+            //    {
+            //        List<StudentMarkViewModel> dataMark;
+            //        if (markOption == "Điểm quá trình")
+            //        {
+            //            dataMark = dBIO.getStudentMark(subject_id, school_year_id_start, school_year_id_end, 2);
+            //        }
+            //        else if (markOption == "Điểm thi")
+            //        {
+            //            dataMark = dBIO.getStudentMark(subject_id, school_year_id_start, school_year_id_end, 3);
+            //        }
+            //        else
+            //        {
+            //            //Diem tong ket
+            //            //dataMark = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end);
+
+            //        }
+            //        var fileName = $"{markOption}_{subjectName}_{startYear}-{EndYear}.xlsx";
+            //        var data = ex.ExportExcelDataDepartment(markOption, subjectName, numberOfCredit, startYear, EndYear, dataMark);
+            //        return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            //    }
+            //    else if (showoption == "HTGV")
+            //    {
+            //        List<StudentCourseSubject> studentCourseSubjects
+            //            = dBIO.getMarks_2(subject_id, school_year_id_start, school_year_id_end);
+            //        List<MarkRate> dataMark;
+            //        if (markOption == "Điểm thi")
+            //        {
+            //            dataMark = dBIO.getMarkByTeacher(studentCourseSubjects, 3);
+            //        }
+            //        else if (markOption == "Điểm quá trình")
+            //        {
+            //            dataMark = dBIO.getMarkByTeacher(studentCourseSubjects, 2);
+            //        }
+            //        else
+            //        {
+            //            var list = dBIO.getMarks(subject_id, school_year_id_start, school_year_id_end);
+            //            dataMark = dBIO.getMarkByTeacher(list);
+
+            //        }
+            //        var fileName = $"{markOption}_{subjectName}_{startYear}-{EndYear}.xlsx";
+            //        var data = ex.ExportExcelDataTeacher(markOption, subjectName, numberOfCredit, startYear, EndYear, dataMark, 1);
+            //        return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+
+            //    }
+            //    else
+            //    {
+            //        List<MarksByEnrollmentClass> dataMark;
+            //        if (markOption == "Điểm quá trình")
+            //        {
+            //            dataMark = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end, 2);
+            //        }
+            //        else if (markOption == "Điểm thi")
+            //        {
+            //            dataMark = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end, 3);
+            //        }
+            //        else
+            //        {
+            //            //Diem tong ket
+            //            dataMark = dBIO.getMarksEnrollmentClass(subject_id, school_year_id_start, school_year_id_end);
+
+            //        }
+            //        var fileName = $"{markOption}_{subjectName}_{startYear}-{EndYear}.xlsx";
+            //        var data = ex.ExportExcelDataEnrollmentClass(markOption, subjectName, numberOfCredit, startYear, EndYear, dataMark);
+            //        return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            //    }
+            //}
+            //else return RedirectToAction("Index");
         }
+        //[HttpPost]
+        //public JsonResult ExportFileDepartment(long? subject_id, long? school_year_id_start, long? school_year_id_end,
+        //    long? departmentID, string markOption)
+        //{
+        //    try
+        //    {
+        //        List<MarkByDepartment> dataMark;
+        //        long startYear = dBIO.getYear(school_year_id_start);
+        //        long EndYear = dBIO.getYear(school_year_id_end);
+        //        string subjectName = dBIO.getSubject(subject_id);
+        //        long numberOfCredit = dBIO.getNumberOfCredit(subject_id);
+        //        string departmentName = dBIO.getDepartmentName(departmentID);
+        //        if (markOption == "Điểm quá trình")
+        //        {
+        //            dataMark = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end, 2, departmentID);
+        //        }
+        //        else if (markOption == "Điểm thi")
+        //        {
+        //            dataMark = dBIO.getMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end, 3, departmentID);
+        //        }
+        //        else
+        //        {
+        //            //Diem tong ket
+        //            dataMark = dBIO.getStudentMarksByDepartMent(subject_id, school_year_id_start, school_year_id_end ,departmentID);
+
+        //        }
+        //        var fileName = $"{markOption}_{subjectName}_{departmentName}_{startYear}-{EndYear}.xlsx";
+        //        var data = ex.ExportExcelDataDepartment(markOption, subjectName, numberOfCredit, departmentName, startYear, EndYear, dataMark);
+        //        return Json(new { code = 200, fileName, departmentName, result = Convert.ToBase64String(data) }, JsonRequestBehavior.AllowGet);
+        //        //return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Json(new { code = 500, }, JsonRequestBehavior.AllowGet);
+        //    }
+        //}
 
         [HttpPost]
         public JsonResult ExportFileEnrollmentClass(long? subject_id, long? school_year_id_start, long? school_year_id_end,

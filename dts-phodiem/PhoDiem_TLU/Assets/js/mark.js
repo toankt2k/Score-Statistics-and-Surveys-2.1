@@ -21,12 +21,43 @@ const Marks = (function (){
         }
     }
 }())
+const DataExcel = (function () {
+    var data = []
+    return {
+        setData(marks) {
+            data = [...marks]
+        }
+    }
+}())
+const Selected = (function () {
+    var subjectID;
+    var semesterIDStart;
+    var semesterIDEnd;
+    var showOption;
+    var markOption;
+    return {
+        setData(s1, s2, s3, s4, s5) {
+            subjectID = s1
+            semesterIDStart = s2
+            semesterIDEnd = s3
+            showOption = s4
+            markOption = s5
+        },
+        getData() {
+            return {
+                subjectID, semesterIDStart, semesterIDEnd, showOption, markOption
+            }
+        }
+    }
+}())
 function handlefilter() {
     var butt = document.getElementById('show__btn-id');
     butt.addEventListener('click', function (event) {
 
 });
-$('form').submit(function (even) {
+    $('form').submit(function (even) {
+        event.preventDefault(); // <- avoid reloading
+        console.log("oke")
         if (even.originalEvent.submitter.value == 'Hiển thị') {
         $.ajax({
             method: $(this).attr('method'),
@@ -43,19 +74,26 @@ $('form').submit(function (even) {
                 console.log(thrownError);
             }
         }).done(function (response) {
-
-            if (response.data != null) {
+            if (response != null) {
                 if (response.code == 200) {
-                    dataMark = response.data;
-                    Marks.setData(response.data)
-                    fillDataToChart(response.data, response.showoption);
+                    
+
+                    console.log(response)
+                    /*DataExcel.setData(response.dataExcel)*/
+                    dataMark = null
+                    
+                    Marks.setData(response.dataTable)
+                    Selected.setData(response.subjectID, response.semesterIDStart, response.semesterIDEnd, response.showoption, response.markOption);
+                    console.log(Marks.getAllData())
+                    fillDataToChart(response.dataTable, response.showoption);
                     fillDataToChartPie(response.sumMark);
                     ok = true;
                     
                     showHandler(response.showoption, response.markOption)
+                    handlerExport()
                 }
                 else {
-                    console.log(reponse.sublist);
+                    console.log(response);
                 }
             }
             else {
@@ -63,25 +101,29 @@ $('form').submit(function (even) {
                 alert('Không có dữ liệu');
             }
         });
-    event.preventDefault(); // <- avoid reloading
+    
         }
             
     })
 }
 function showHandler(showOption, markOption) {
-    console.log(showOption, markOption)
-    if (dataMark != null) {
+    
+    if (true) {
         
         if (showOption === "HTK") {
             var marks = Marks.getAllData()
-            var data = marks.map(data => {
-                var { stt, subjectName, departmentName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = data
+            var data = marks.map(dataItem => {
+                var { stt, departmentID, departmentName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = dataItem
                 return {
-                    stt, subjectName, departmentName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
-                    'button': `<button onclick= "handleExportDepartment(${stt},'${markOption}')" class="download export"><i class="fa fa-download" aria-hidden="true"></i></button>`
+                    
+                    stt, departmentName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
+                    'checkbox': `<div class="form-check">
+                                  <input class="form-check-input" type="checkbox" name="checkboxExport[]" value="${departmentID}">
+                                  
+                                </div>`,
                 }
             })
-            console.log(data)
+            
             data = data.map(Object.values)
             console.log(data)
             $("#table_id_department").DataTable().clear();
@@ -94,9 +136,9 @@ function showHandler(showOption, markOption) {
         else if (showOption === "HTGV") {
             var marks = Marks.getAllData()
             var data = marks.map(data => {
-                var { stt, subjectName, teacherName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = data
+                var { stt, teacherName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = data
                 return {
-                    stt, subjectName, teacherName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
+                    stt, teacherName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
                     'button': `<button onclick= "handleExportTeacher(${stt},'${markOption}')" class="download export"><i class="fa fa-download" aria-hidden="true"></i></button>`
                 }
             })
@@ -129,6 +171,47 @@ function showHandler(showOption, markOption) {
         }
 
     }
+}
+function handlerExport() {
+    selected = Selected.getData()
+    var { subjectID, semesterIDStart, semesterIDEnd, showOption, markOption, } = selected
+    var submitBtn = $('#export__btn-id')
+    var checkboxIDs = []
+    submitBtn.click(function (e) {
+        e.preventDefault()
+
+        $('input[name="checkboxExport[]"]:checked').each(function () {
+            checkboxIDs.push(
+                $(this).val()
+            )
+        });
+        console.log(checkboxIDs);
+        if (checkboxIDs.length > 0) {
+
+            $.post("../Mark/Export", {
+                subjectID,
+                semesterIDStart,
+                semesterIDEnd,
+                showOption,
+                markOption,
+                checkboxIDs
+            }, function (data) {
+                if (data.code == 200) {
+                    var bytes = Base64ToBytes(data.result)
+                    var a = window.document.createElement('a')
+
+                    a.href = window.URL.createObjectURL(new Blob([bytes], { type: 'application/xlsx' }))
+
+                    a.download = `${data.fileName}`
+
+                    document.body.appendChild(a)
+                    a.click();
+                    document.body.removeChild(a)
+                }
+                else alert("Lỗi khi xuất file")
+            })
+        }
+    })
 }
 function handleExportDepartment(stt, markOption) {
     var mark = Marks.getData(stt)

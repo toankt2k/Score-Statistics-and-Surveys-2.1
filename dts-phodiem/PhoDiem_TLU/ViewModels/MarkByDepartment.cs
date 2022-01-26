@@ -54,6 +54,24 @@ namespace PhoDiem_TLU.ViewModels
             this.F = F;
             this.rateF = rateF;
         }
+        public MarkByDepartment(long stt,long?departmentID, string departmentName, long sum, long A, double rateA, long B, double rateB, long C, double rateC, long D, double rateD,
+            long F, double rateF)
+        {
+            this.stt = stt;
+            this.departmentID = departmentID;   
+            this.departmentName = departmentName;
+            this.sum = sum;
+            this.A = A;
+            this.rateA = rateA;
+            this.B = B;
+            this.rateB = rateB;
+            this.C = C;
+            this.rateC = rateC;
+            this.D = D;
+            this.rateD = rateD;
+            this.F = F;
+            this.rateF = rateF;
+        }
         public long? departmentID { get; set; }
         public string departmentName { get; set; }
     }
