@@ -29,6 +29,23 @@ namespace PhoDiem_TLU.ViewModels
             this.rateF = rateF;
             this.numberOfCredit = numberOfCredit;
         }
+        public MarkRate(long stt, long? teacherID,string teacherName, long sum, long a, double rateA, long b, double rateB, long c, double rateC, long d, double rateD, long f, double rateF)
+        {
+            this.stt = stt;
+            this.teacherID = teacherID;
+            this.teacherName = teacherName;
+            this.sum = sum;
+            A = a;
+            this.rateA = rateA;
+            B = b;
+            this.rateB = rateB;
+            C = c;
+            this.rateC = rateC;
+            D = d;
+            this.rateD = rateD;
+            F = f;
+            this.rateF = rateF;
+        }
         public MarkRate(long stt,long? subjectID, string subjectName,long? teacherID, string teacherName,
             long? startYeadID,long? endYearID,
             long sum, long a, double rateA, long b, double rateB, long C, double rateC, long d, double rateD,

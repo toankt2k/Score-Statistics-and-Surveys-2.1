@@ -356,10 +356,12 @@
     <Compile Include="Helpers\ExcelExport.cs" />
     <Compile Include="Commons\PaginationSet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\DataExcel.cs" />
     <Compile Include="ViewModels\MarkStatiticBySemester.cs" />
     <Compile Include="ViewModels\DataViewModels.cs" />
     <Compile Include="ViewModels\MarkByDepartment.cs" />
     <Compile Include="ViewModels\RoleViewModel.cs" />
+    <Compile Include="ViewModels\StudentMarkViewModel.cs" />
     <Compile Include="ViewModels\UpdateUserViewModel.cs" />
     <Compile Include="ViewModels\UserAddViewModel.cs" />
     <Compile Include="ViewModels\UserLoginViewModel.cs" />
