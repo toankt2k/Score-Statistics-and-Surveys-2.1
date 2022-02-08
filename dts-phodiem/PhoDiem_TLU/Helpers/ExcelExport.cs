@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using OfficeOpenXml.Drawing.Chart;
 using OfficeOpenXml.Style;
 using PhoDiem_TLU.DatabaseIO;
 using PhoDiem_TLU.ViewModels;
@@ -236,6 +237,15 @@ namespace PhoDiem_TLU.Helpers
 
 
                     #region chi tiết
+                    var waterfallChart1 = workSheet.Drawings.AddBarChart("Phổ điểm kết quả " + (mark == "1" ? "quá trình" : mark == "2" ? "thi" : "tổng kết"), eBarChartType.ColumnClustered);
+                    waterfallChart1.Title.Text = "Phổ điểm kết quả " + (mark == "1" ? "quá trình" : mark == "2" ? "thi" : "tổng kết");
+                    waterfallChart1.SetPosition(max, 0, 5, 0);
+                    waterfallChart1.SetSize(330, 160);
+                    var wfSerie1 = waterfallChart1.Series.Add(workSheet.Cells["C" + (max + 3) + ":C" + (max + 7)]);
+                    var dp1 = wfSerie1.DataPoints.Add(0);
+
+                    dp1 = wfSerie1.DataPoints.Add(7);
+
                     workSheet.Cells["A" + (row_max + 3)].Value = "A";
                     workSheet.Cells["B" + (row_max + 3)].Value = "8.45-10";
                     workSheet.Cells["C" + (row_max + 3)].Value = cA;
@@ -275,6 +285,17 @@ namespace PhoDiem_TLU.Helpers
                     workSheet.Cells.AutoFitColumns();
                 }
                 #region Tổng hợp
+
+                var waterfallChart = workSheetDefault.Drawings.AddBarChart("Phổ điểm kết quả " + (mark == "1" ? "quá trình" : mark == "2" ? "thi" : "tổng kết"), eBarChartType.ColumnClustered);
+                waterfallChart.Title.Text = "Phổ điểm kết quả " + (mark == "1" ? "quá trình" : mark == "2" ? "thi" : "tổng kết");
+                waterfallChart.SetPosition(max, 0, 5, 0);
+                waterfallChart.SetSize(330, 160);
+                var wfSerie = waterfallChart.Series.Add(workSheetDefault.Cells["C" + (max + 3)+ ":C" + (max + 7)]);
+                var dp = wfSerie.DataPoints.Add(0);
+
+                dp = wfSerie.DataPoints.Add(7);
+
+
                 workSheetDefault.Cells["A" + (max + 1) + ":D" + (max + 1)].Merge = true;
                 workSheetDefault.Cells["A" + (max + 1) + ":D" + (max + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + (mark=="1"?"QUÁ TRÌNH":mark=="2"?"THI":"TỔNG KẾT");
                 workSheetDefault.Cells["A" + (max + 2)].Value = "Điểm chữ";
@@ -284,7 +305,7 @@ namespace PhoDiem_TLU.Helpers
                 workSheetDefault.Cells["A" + (max + 3)].Value = "A";
                 workSheetDefault.Cells["B" + (max + 3)].Value = "8.45-10";
                 workSheetDefault.Cells["C" + (max + 3)].Value = tcA;
-                workSheetDefault.Cells["D" + (max + 3)].Value = total ==0 ? "0" : tcA * 100 / total + " %";
+                workSheetDefault.Cells["D" + (max + 3)].Value = total == 0 ? "0" : tcA * 100 / total + " %";
 
                 workSheetDefault.Cells["A" + (max + 4)].Value = "B";
                 workSheetDefault.Cells["B" + (max + 4)].Value = "6.95-8.44";
