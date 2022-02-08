@@ -3,7 +3,7 @@
     "",
     "\\dts-phodiem",
     "\\dts-phodiem\\PhoDiem_TLU",
-    "\\dts-phodiem\\PhoDiem_TLU\\DatabaseIO",
+    "\\dts-phodiem\\PhoDiem_TLU\\Controllers",
     "\\dts-phodiem\\PhoDiem_TLU\\Helpers",
     "\\dts-phodiem\\PhoDiem_TLU\\Views",
     "\\dts-phodiem\\PhoDiem_TLU\\Views\\Home",
@@ -11,6 +11,6 @@
     "\\dts-phodiem\\PhoDiem_TLU\\Views\\Semester",
     "\\dts-phodiem\\PhoDiem_TLU\\Views\\User"
   ],
-  "SelectedNode": "\\dts-phodiem\\PhoDiem_TLU\\Helpers\\ExcelExport.cs",
+  "SelectedNode": "\\dts-phodiem\\PhoDiem_TLU\\Controllers\\MarkController.cs",
   "PreviewInSolutionExplorer": false
 }
