@@ -218,6 +218,7 @@ namespace PhoDiem_TLU.Controllers
                 var resultQt = new List<MarkStatiticBySemester>();
 
                 int stt = 0;
+                int tt = 0;
                 foreach (var cl in list_result)
                 {
                     int[] list_mark = { 0, 0, 0, 0, 0 };
@@ -237,9 +238,19 @@ namespace PhoDiem_TLU.Controllers
                     resultExam.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(),cl.Key.teacherName.ToString(), list_mark[4], list_mark[3], list_mark[2], list_mark[1], list_mark[0], total, cl.Key.subject.ToString()));
                     resultFinal.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(), cl.Key.teacherName.ToString(), list_mark_final[4], list_mark_final[3], list_mark_final[2], list_mark_final[1], list_mark_final[0], total, cl.Key.subject.ToString()));
                     resultQt.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(), cl.Key.teacherName.ToString(), list_mark_QT[4], list_mark_QT[3], list_mark_QT[2], list_mark_QT[1], list_mark_QT[0], total, cl.Key.subject.ToString()));
-                
+                    tt += total;
                 }
-                return Json(new { code = 200, dataQt = resultQt, dataFinal = resultFinal, dataExam = resultExam, chart_mark = new { qt = listMarkQT, exam = listMark, final = listMarkFinal } }, JsonRequestBehavior.AllowGet);
+                double[] listMark1 = { 0, 0, 0, 0, 0 };
+                double[] listMarkFinal1 = { 0, 0, 0, 0, 0 };
+                double[] listMarkQT1 = { 0, 0, 0, 0, 0 };
+                for (int i = 0; i < 5; i++)
+                {
+                    listMark1[i] = tt == 0 ? 0 : Math.Round((double)(listMark[i] * 100) / tt, 2);
+                    listMarkFinal1[i] = tt == 0 ? 0 : Math.Round((double)(listMarkFinal[i] * 100) / tt, 2);
+                    listMarkQT1[i] = tt == 0 ? 0 : Math.Round((double)(listMarkQT[i] * 100) / tt, 2);
+                }
+
+                return Json(new { code = 200, dataQt = resultQt, dataFinal = resultFinal, dataExam = resultExam, chart_mark = new { qt = listMarkQT1, exam = listMark1, final = listMarkFinal1 } }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception e)
             {

@@ -24,7 +24,7 @@
     }
     
 }
-var value = { value: '', subject: '', semester: '', course: '', period: '', type: '', mark: '2' };
+var value = { value: '', subject: '', course: '', period: '', type: '', mark: '2' };
 var listClass = new Set();
 var listSemester = new Set();
 var dataExam = [];
@@ -35,6 +35,7 @@ var chart_data = {
     exam: [],
     final: []
 };
+console.log([...semesterData]);
 
 $('.dropdown-container')
     .on('click', '.dropdown-button', function () {
@@ -60,28 +61,12 @@ $('.dropdown-container')
 $('#multi').on('click', function () {
     $("#hocKySelect").toggle();
 })
-$('#hocKySelect > option').on('click', function () {
 
-    if (listSemester.has(this.value)) {
-        listSemester.delete(this.value)
-        this.style.color = '#495057'
-        this.style.fontWeight = 'normal'
-    }
-    else {
-        if (this.value != '') {
-            listSemester.add(this.value)
-            this.style.color = '#007bff'
-            this.style.fontWeight = 'bold'
-        }
-        
-    }
-    let str = "Học kỳ";
-    str += '<span style="color:#0069d9;font-weight:bold"> (' + listSemester.size + ')</span>';
-    $('#selected').empty().append(str)
-    setFillter();
+
+$(".chosen-select").chosen({
+    max_selected_options: 10,
+    width: '100%'
 });
-
-
 
 
 function ql() {
@@ -98,12 +83,23 @@ function hp() {
 }
 function getClass(type) {
     form = $('#form');
-    datas = { data : form.serialize()+"&type=" + type };
+    listSemester.clear();
+    let arrIndex = [...$('li.result-selected')];
+    arrIndex.forEach((val, idx) => {
+        let ss = semesterData[val.getAttribute('data-option-array-index') - 1]
+        listSemester.add(ss.Value)
+    })
+    console.log(form.serializeArray());
+    let dataForm = form.serializeArray();
     $.ajax({
         method: form.attr('method'),
         url: form.attr('action'),
-        data: form.serialize() + "&type=" + type + "&semester=" +[...listSemester],
-        type: 'GET',
+        data: {
+            dotHoc: value.period, khoaHoc: value.course,
+            monHoc: value.subject, type: value.type,
+            semester: [...listSemester]
+        },
+        type: 'POST',
         // other AJAX settings goes here
         // ..
         error: function (xhr, ajaxOptions, thrownError) {
@@ -193,6 +189,12 @@ function change(res, type) {
     show('');
     $("#_loading").show();
     $("#main_content").hide();
+    listSemester.clear();
+    let arrIndex = [...$('li.result-selected')];
+    arrIndex.forEach((val, idx) => {
+        let ss = semesterData[val.getAttribute('data-option-array-index') - 1]
+        listSemester.add(ss.Value)
+    })
     $.ajax({
         url: '/Semester/GetMark',
         dataType: "json",
@@ -248,6 +250,12 @@ function setPeriod(res) {
 }
 
 function setFillter() {
+    listSemester.clear();
+    let arrIndex = [...$('li.result-selected')];
+    arrIndex.forEach((val, idx) => {
+        let ss = semesterData[val.getAttribute('data-option-array-index') - 1]
+        listSemester.add(ss.Value)
+    })
     $.ajax({
         url: '/Semester/getSubject',
         dataType: "json",
@@ -281,6 +289,12 @@ function setFillter() {
 }
 
 function xuat() {
+    listSemester.clear();
+    let arrIndex = [...$('li.result-selected')];
+    arrIndex.forEach((val, idx) => {
+        let ss = semesterData[val.getAttribute('data-option-array-index') - 1]
+        listSemester.add(ss.Value)
+    })
     $.ajax({
         type: "POST",
         url: "/Semester/ExportAll",
@@ -350,56 +364,30 @@ var massPopChart = new Chart(myChart, setChart('Biểu đồ phân bố điểm 
 var massPopChart2 = new Chart(myChart2, setChart('Biểu đồ phân bố điểm tổng kết', chart_data.final, 'Điểm tổng kết'));
 $(document).ready(function () {
     var table = $("#table_id").DataTable();
-    //var data = [
-    //    [1, 'Giải tích 2-1-19 (61CTM+KTO_01)', 'teacher', 3, 5.172413793103448, 1, 1.7241379310344827, 0, 0, 10, 17.24137931034483, 44, 75.86206896551724, 'môn học'],
-    //    [1, 'Giải tích 2-1-19 (61CTM+KTO_01)', 'teacher', 3, 5.172413793103448, 1, 1.7241379310344827, 0, 0, 10, 17.24137931034483, 44, 75.86206896551724, 'môn học'],
-    //    [1, 'Giải tích 2-1-19 (61CTM+KTO_01)', 'teacher', 3, 5.172413793103448, 1, 1.7241379310344827, 0, 0, 10, 17.24137931034483, 44, 75.86206896551724, 'môn học'],
-
-    //];
-    //console.log(data);
-    //$("#table_id").DataTable().clear();
-    //$("#table_id").DataTable().rows.add(data);
-    //$("#table_id").DataTable().draw();
 })
 function setChart(title, data, label) {
     return {
-        type: 'bar', // bar, horizontalBar, pie, line, doughnut, radar, polarArea
+        type: 'pie',
         data: {
             labels: dataLabel,
             datasets: [{
                 label: label,
                 data: data,
-                //backgroundColor:'green',
-                backgroundColor: '#198002',
-                borderColor: '#7C7AFD',
-                hoverBorderWidth: 1,
-                hoverBorderColor: '#7C7AFD'
+                backgroundColor: ['Red', 'Orange', 'Yellow', 'Green', 'Blue'],
+                hoverColor: ['#7C7AFD', '#7C7AFD', '#7C7AFD', '#7C7AFD', '#7C7AFD']
             }]
         },
         options: {
-            title: {
-                display: true,
-                text: title,
-                fontSize: 20
-            },
-            legend: {
-                display: true,
-                position: 'right',
-                labels: {
-                    fontColor: '#000'
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Chart.js Pie Chart'
                 }
-            },
-            layout: {
-                padding: {
-                    left: 50,
-                    right: 0,
-                    bottom: 0,
-                    top: 0
-                }
-            },
-            tooltips: {
-                enabled: true
             }
-        }
+        },
     }
 }

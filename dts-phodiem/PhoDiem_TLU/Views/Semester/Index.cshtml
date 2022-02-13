@@ -12,8 +12,9 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css">
     <script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
-
+    <link href="~/Assets/css/mark-by-semester/chosen.css" rel="stylesheet" />
     <link href="~/Assets/css/mark-by-semester/style.css" rel="stylesheet" />
+
 </head>
 <body>
     <style>
@@ -22,15 +23,19 @@
         }
 
         td {
-            text-align:center;
-            white-space:normal !important;
+            text-align: center;
+            white-space: normal !important;
         }
+
         th {
-            padding:0 !important;
+            padding: 0 !important;
             text-align: center;
             white-space: normal !important;
         }
     </style>
+    <script>
+        var semesterData =  [...@Html.Raw(Json.Encode(ViewBag.semester))];
+    </script>
     <div id="_loading" style="display:none;padding-top:10%; margin-left:42%">
         <img src="~/Content/img/gif/loading.gif" style="width:150px" />
     </div>
@@ -48,25 +53,14 @@
                             <div class="row">
                                 @Html.ValidationSummary(true)
                                 <div class="col-md-5">
-                                    <div class="form-control d-flex" id="multi">
-                                        <div style="flex:5" id="selected">
-                                            Học kỳ
-                                        </div>
-                                        <div class="d-flex justify-content-end align-items-center" style="flex:1">
-                                            <i class="fa fa-chevron-down"></i>
-                                        </div>
-                                    </div>
-                                    
-                                    @Html.DropDownList("hocKy", (IEnumerable<SelectListItem>)ViewBag.semester, "Học kỳ", new { @class = "form-control", id = "hocKySelect", multiple = "multiple", required = (string)null })
+                                    @Html.DropDownList("hocKy", (IEnumerable<SelectListItem>)ViewBag.semester, "Học kỳ", new { @class = "chosen-select", data_placeholder = "Học kỳ", id ="multiple-label-example", multiple = "multiple", required = (string)null })
 
-                                    @Html.DropDownList("dotHoc", (IEnumerable<SelectListItem>)(ViewBag.semester_regitster_period), "Đợt học", new { @class = "form-control", onchange = "setPeriod(this)", id = "dotHocSelect", required = (string)null })
+                                    @Html.DropDownList("dotHoc", (IEnumerable<SelectListItem>)(ViewBag.semester_regitster_period), "Đợt học", new { @class = "form-control", style="margin-top:20px", onchange = "setPeriod(this)", id = "dotHocSelect", required = (string)null })
                                 </div>
                                 <div class="col-md-5">
                                     @Html.DropDownList("khoaHoc", (IEnumerable<SelectListItem>)(ViewBag.course_year), "Khóa học", new { @class = "form-control", onchange = "setCourse(this)", id = "khoaHocSelect", required = (string)null })
                                     @Html.DropDownList("monHoc", (IEnumerable<SelectListItem>)(ViewBag.subject), "Môn học", new { @class = "form-control", onchange = "setSubject(this)", id = "monHocSelect", required = (string)null })
                                 </div>
-
-                                
 
 
 
@@ -79,7 +73,7 @@
                         </div>
                     }
                 </div>
-                <div class="d-flex" style="margin-left:-8px" >
+                <div class="d-flex" style="margin-left:-8px">
                     <div class="col-md-10">
                         <div class="row">
                             <div class="col-md-12 d-flex justify-content-center align-items-center">
@@ -129,21 +123,20 @@
                             <th colspan="2">Điểm F</th>
                         </tr>
                         <tr>
-                            <th >Số lượng</th>
-                            <th >Tỉ lệ</th>
-                            <th >Số lượng</th>
-                            <th >Tỉ lệ</th>
-                            <th >Số lượng</th>
-                            <th >Tỉ lệ</th>
-                            <th >Số lượng</th>
-                            <th >Tỉ lệ</th>
-                            <th >Số lượng</th>
-                            <th >Tỉ lệ</th>
+                            <th>Số lượng</th>
+                            <th>Tỉ lệ</th>
+                            <th>Số lượng</th>
+                            <th>Tỉ lệ</th>
+                            <th>Số lượng</th>
+                            <th>Tỉ lệ</th>
+                            <th>Số lượng</th>
+                            <th>Tỉ lệ</th>
+                            <th>Số lượng</th>
+                            <th>Tỉ lệ</th>
                         </tr>
 
                     </thead>
                     <tbody>
-                        
                     </tbody>
                 </table>
             </div>
@@ -174,10 +167,8 @@
         </div>
 
     </div>
+    <script src="~/Assets/js/mark-by-semester/chosen.jquery.min.js"></script>
     <script src="~/Assets/js/mark-by-semester/mark-by-semester.js"></script>
-    <script >
-
-    </script>
 
 </body>
 

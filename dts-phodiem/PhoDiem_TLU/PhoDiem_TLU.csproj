@@ -375,9 +375,11 @@
     <Compile Include="ViewModels\UserViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\css\mark-by-semester\chosen.css" />
     <Content Include="Assets\css\mark-by-semester\style.css" />
     <Content Include="Assets\css\reponsive.css" />
     <Content Include="Assets\css\style.css" />
+    <Content Include="Assets\js\mark-by-semester\chosen.jquery.min.js" />
     <Content Include="Assets\js\mark.js" />
     <Content Include="Assets\js\markbyteacher.js" />
     <Content Include="Assets\js\statisticByYear.js" />
@@ -6977,6 +6979,8 @@
     <Content Include="Content\img\avatar5.png" />
     <Content Include="Content\img\boxed-bg.jpg" />
     <Content Include="Content\img\boxed-bg.png" />
+    <Content Include="Content\img\chosen-sprite%402x.png" />
+    <Content Include="Content\img\chosen-sprite.png" />
     <Content Include="Content\img\credit\american-express.png" />
     <Content Include="Content\img\credit\cirrus.png" />
     <Content Include="Content\img\credit\mastercard.png" />
