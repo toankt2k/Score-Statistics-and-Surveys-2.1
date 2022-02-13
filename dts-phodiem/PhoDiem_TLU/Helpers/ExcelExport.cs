@@ -237,13 +237,13 @@ namespace PhoDiem_TLU.Helpers
 
 
                     #region chi tiết
-                    var waterfallChart1 = workSheet.Drawings.AddBarChart("Phổ điểm kết quả " + (mark == "1" ? "quá trình" : mark == "2" ? "thi" : "tổng kết"), eBarChartType.ColumnClustered);
+                    var waterfallChart1 = workSheet.Drawings.AddPieChart("Phổ điểm kết quả " + (mark == "1" ? "quá trình" : mark == "2" ? "thi" : "tổng kết"), ePieChartType.Pie);
                     waterfallChart1.Title.Text = "Phổ điểm kết quả " + (mark == "1" ? "quá trình" : mark == "2" ? "thi" : "tổng kết");
                     waterfallChart1.SetPosition(max, 0, 5, 0);
-                    waterfallChart1.SetSize(330, 160);
-                    var wfSerie1 = waterfallChart1.Series.Add(workSheet.Cells["C" + (max + 3) + ":C" + (max + 7)]);
+                    waterfallChart1.SetSize(250, 160);
+                    var wfSerie1 = waterfallChart1.Series.Add(workSheet.Cells["C" + (max + 3) + ":C" + (max + 7)], workSheet.Cells["A" + (max + 3) + ":A" + (max + 7)]);
                     var dp1 = wfSerie1.DataPoints.Add(0);
-
+                    waterfallChart1.DataLabel.ShowPercent = true;
                     dp1 = wfSerie1.DataPoints.Add(7);
 
                     workSheet.Cells["A" + (row_max + 3)].Value = "A";
@@ -286,13 +286,13 @@ namespace PhoDiem_TLU.Helpers
                 }
                 #region Tổng hợp
 
-                var waterfallChart = workSheetDefault.Drawings.AddBarChart("Phổ điểm kết quả " + (mark == "1" ? "quá trình" : mark == "2" ? "thi" : "tổng kết"), eBarChartType.ColumnClustered);
+                var waterfallChart = workSheetDefault.Drawings.AddPieChart("Phổ điểm kết quả " + (mark == "1" ? "quá trình" : mark == "2" ? "thi" : "tổng kết"), ePieChartType.Pie);
                 waterfallChart.Title.Text = "Phổ điểm kết quả " + (mark == "1" ? "quá trình" : mark == "2" ? "thi" : "tổng kết");
                 waterfallChart.SetPosition(max, 0, 5, 0);
-                waterfallChart.SetSize(330, 160);
-                var wfSerie = waterfallChart.Series.Add(workSheetDefault.Cells["C" + (max + 3)+ ":C" + (max + 7)]);
+                waterfallChart.SetSize(250, 160);
+                var wfSerie = waterfallChart.Series.Add(workSheetDefault.Cells["C" + (max + 3) + ":C" + (max + 7)], workSheetDefault.Cells["A" + (max + 3) + ":A" + (max + 7)]);
                 var dp = wfSerie.DataPoints.Add(0);
-
+                waterfallChart.DataLabel.ShowPercent = true;
                 dp = wfSerie.DataPoints.Add(7);
 
 
