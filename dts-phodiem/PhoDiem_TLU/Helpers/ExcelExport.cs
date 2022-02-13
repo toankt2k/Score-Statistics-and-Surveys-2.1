@@ -1309,6 +1309,11 @@ namespace PhoDiem_TLU.Helpers
                 sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
 
                 sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
+                long tA = 0;
+                long tB = 0;
+                long tC = 0;
+                long tD = 0;
+                long tF = 0;
 
                 int rowInd = num + 2;
                 foreach (var item in dataTable)
@@ -1328,14 +1333,56 @@ namespace PhoDiem_TLU.Helpers
                     sheet.Cells[rowInd, 13].Value = item.F;
                     sheet.Cells[rowInd, 14].Value = item.rateF;
                     rowInd++;
+                    tA += item.A; tB += item.B; tC += item.C; tD += item.D; tF += item.F;
                 }
 
+                var waterfallChart = sheet.Drawings.AddPieChart("Phổ điểm kết quả " + $"{markOption}", ePieChartType.Pie);
+                waterfallChart.Title.Text = "Phổ điểm kết quả " + $"{markOption}";
+                waterfallChart.SetPosition(rowInd, 0, 5, 0);
+                waterfallChart.SetSize(250, 160);
+                var wfSerie = waterfallChart.Series.Add(sheet.Cells["C" + (rowInd + 3) + ":C" + (rowInd + 7)], sheet.Cells["A" + (rowInd + 3) + ":A" + (rowInd + 7)]);
+                var dp = wfSerie.DataPoints.Add(0);
+                waterfallChart.DataLabel.ShowPercent = true;
+                dp = wfSerie.DataPoints.Add(7);
+                long total = tA + tB + tC + tD + tF;
+
+                sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Merge = true;
+                sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + $"{markOption}";
+                sheet.Cells["A" + (rowInd + 2)].Value = "Điểm chữ";
+                sheet.Cells["B" + (rowInd + 2)].Value = "Điểm số";
+                sheet.Cells["C" + (rowInd + 2)].Value = "Số SV";
+                sheet.Cells["D" + (rowInd + 2)].Value = "Tỷ lệ %";
+                sheet.Cells["A" + (rowInd + 3)].Value = "A";
+                sheet.Cells["B" + (rowInd + 3)].Value = "8.45-10";
+                sheet.Cells["C" + (rowInd + 3)].Value = tA;
+                sheet.Cells["D" + (rowInd + 3)].Value = total == 0 ? "0" : tA * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 4)].Value = "B";
+                sheet.Cells["B" + (rowInd + 4)].Value = "6.95-8.44";
+                sheet.Cells["C" + (rowInd + 4)].Value = tB;
+                sheet.Cells["D" + (rowInd + 4)].Value = total == 0 ? "0" : tB * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 5)].Value = "C";
+                sheet.Cells["B" + (rowInd + 5)].Value = "5.45-6.94";
+                sheet.Cells["C" + (rowInd + 5)].Value = tC;
+                sheet.Cells["D" + (rowInd + 5)].Value = total == 0 ? "0" : tC * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 6)].Value = "D";
+                sheet.Cells["B" + (rowInd + 6)].Value = "3.95-5.44";
+                sheet.Cells["C" + (rowInd + 6)].Value = tD;
+                sheet.Cells["D" + (rowInd + 6)].Value = total == 0 ? "0" : tD * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 7)].Value = "F";
+                sheet.Cells["B" + (rowInd + 7)].Value = "0-3.94";
+                sheet.Cells["C" + (rowInd + 7)].Value = tF;
+                sheet.Cells["D" + (rowInd + 7)].Value = total == 0 ? "0" : tF * 100 / total + " %";
+
                 rowInd += 1;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
+                sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Merge = true;
+                sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Value = "KÝ TÊN";
+                sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Merge = true;
+                sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
+                sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Style.Font.Bold = true;
                 rowInd++;
 
                 sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
@@ -1425,14 +1472,62 @@ namespace PhoDiem_TLU.Helpers
                         //sheet.Cells[rowInd, 14].Value = item.rateF;
                         rowInd++;
                         count++;
+                        var mark = i.mark;
+                        if (mark <= 10 && mark >= 8.45) tA++;
+                        else if (mark <= 8.44 && mark >= 6.95) tB++;
+                        else if (mark <= 6.94 && mark >= 5.45) tC++;
+                        else if (mark <= 5.44 && mark >= 3.95) tD++;
+                        else tF++;
                     }
 
+                    var waterfallChart1 = sheet.Drawings.AddPieChart("Phổ điểm kết quả " + $"{markOption}", ePieChartType.Pie);
+                    waterfallChart1.Title.Text = "Phổ điểm kết quả " + $"{markOption}";
+                    waterfallChart1.SetPosition(rowInd, 0, 5, 0);
+                    waterfallChart1.SetSize(250, 160);
+                    var wfSerie1 = waterfallChart1.Series.Add(sheet.Cells["C" + (rowInd + 3) + ":C" + (rowInd + 7)], sheet.Cells["A" + (rowInd + 3) + ":A" + (rowInd + 7)]);
+                    var dp1 = wfSerie1.DataPoints.Add(0);
+                    waterfallChart1.DataLabel.ShowPercent = true;
+                    dp1 = wfSerie1.DataPoints.Add(7);
+                    total = tA + tB + tC + tD + tF;
+
+                    sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Merge = true;
+                    sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + $"{markOption}";
+                    sheet.Cells["A" + (rowInd + 2)].Value = "Điểm chữ";
+                    sheet.Cells["B" + (rowInd + 2)].Value = "Điểm số";
+                    sheet.Cells["C" + (rowInd + 2)].Value = "Số SV";
+                    sheet.Cells["D" + (rowInd + 2)].Value = "Tỷ lệ %";
+                    sheet.Cells["A" + (rowInd + 3)].Value = "A";
+                    sheet.Cells["B" + (rowInd + 3)].Value = "8.45-10";
+                    sheet.Cells["C" + (rowInd + 3)].Value = tA;
+                    sheet.Cells["D" + (rowInd + 3)].Value = total == 0 ? "0" : tA * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 4)].Value = "B";
+                    sheet.Cells["B" + (rowInd + 4)].Value = "6.95-8.44";
+                    sheet.Cells["C" + (rowInd + 4)].Value = tB;
+                    sheet.Cells["D" + (rowInd + 4)].Value = total == 0 ? "0" : tB * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 5)].Value = "C";
+                    sheet.Cells["B" + (rowInd + 5)].Value = "5.45-6.94";
+                    sheet.Cells["C" + (rowInd + 5)].Value = tC;
+                    sheet.Cells["D" + (rowInd + 5)].Value = total == 0 ? "0" : tC * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 6)].Value = "D";
+                    sheet.Cells["B" + (rowInd + 6)].Value = "3.95-5.44";
+                    sheet.Cells["C" + (rowInd + 6)].Value = tD;
+                    sheet.Cells["D" + (rowInd + 6)].Value = total == 0 ? "0" : tD * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 7)].Value = "F";
+                    sheet.Cells["B" + (rowInd + 7)].Value = "0-3.94";
+                    sheet.Cells["C" + (rowInd + 7)].Value = tF;
+                    sheet.Cells["D" + (rowInd + 7)].Value = total == 0 ? "0" : tF * 100 / total + " %";
+
+
                     rowInd += 1;
-                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                    sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                    sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
+                    sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Merge = true;
+                    sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Value = "KÝ TÊN";
+                    sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Merge = true;
+                    sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
+                    sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Style.Font.Bold = true;
                     rowInd++;
 
                     sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
@@ -1526,6 +1621,11 @@ namespace PhoDiem_TLU.Helpers
                 sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
 
                 sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
+                long tA = 0;
+                long tB = 0;
+                long tC = 0;
+                long tD = 0;
+                long tF = 0;
 
                 int rowInd = num + 2;
                 foreach (var item in dataTable)
@@ -1545,19 +1645,62 @@ namespace PhoDiem_TLU.Helpers
                     sheet.Cells[rowInd, 13].Value = item.F;
                     sheet.Cells[rowInd, 14].Value = item.rateF;
                     rowInd++;
-                }
+                    tA += item.A;tB += item.B;tC += item.C;tD += item.D;tF += item.F;
+
+                } 
+
+                var waterfallChart = sheet.Drawings.AddPieChart("Phổ điểm kết quả " + $"{markOption}", ePieChartType.Pie);
+                waterfallChart.Title.Text = "Phổ điểm kết quả " + $"{markOption}";
+                waterfallChart.SetPosition(rowInd, 0, 5, 0);
+                waterfallChart.SetSize(250, 160);
+                var wfSerie = waterfallChart.Series.Add(sheet.Cells["C" + (rowInd + 3) + ":C" + (rowInd + 7)], sheet.Cells["A" + (rowInd + 3) + ":A" + (rowInd + 7)]);
+                var dp = wfSerie.DataPoints.Add(0);
+                waterfallChart.DataLabel.ShowPercent = true;
+                dp = wfSerie.DataPoints.Add(7);
+                long total = tA + tB + tC + tD + tF;
+
+                sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Merge = true;
+                sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + $"{markOption}";
+                sheet.Cells["A" + (rowInd + 2)].Value = "Điểm chữ";
+                sheet.Cells["B" + (rowInd + 2)].Value = "Điểm số";
+                sheet.Cells["C" + (rowInd + 2)].Value = "Số SV";
+                sheet.Cells["D" + (rowInd + 2)].Value = "Tỷ lệ %";
+                sheet.Cells["A" + (rowInd + 3)].Value = "A";
+                sheet.Cells["B" + (rowInd + 3)].Value = "8.45-10";
+                sheet.Cells["C" + (rowInd + 3)].Value = tA;
+                sheet.Cells["D" + (rowInd + 3)].Value = total == 0 ? "0" : tA * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 4)].Value = "B";
+                sheet.Cells["B" + (rowInd + 4)].Value = "6.95-8.44";
+                sheet.Cells["C" + (rowInd + 4)].Value = tB;
+                sheet.Cells["D" + (rowInd + 4)].Value = total == 0 ? "0" : tB * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 5)].Value = "C";
+                sheet.Cells["B" + (rowInd + 5)].Value = "5.45-6.94";
+                sheet.Cells["C" + (rowInd + 5)].Value = tC;
+                sheet.Cells["D" + (rowInd + 5)].Value = total == 0 ? "0" : tC * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 6)].Value = "D";
+                sheet.Cells["B" + (rowInd + 6)].Value = "3.95-5.44";
+                sheet.Cells["C" + (rowInd + 6)].Value = tD;
+                sheet.Cells["D" + (rowInd + 6)].Value = total == 0 ? "0" : tD * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 7)].Value = "F";
+                sheet.Cells["B" + (rowInd + 7)].Value = "0-3.94";
+                sheet.Cells["C" + (rowInd + 7)].Value = tF;
+                sheet.Cells["D" + (rowInd + 7)].Value = total == 0 ? "0" : tF * 100 / total + " %";
 
                 rowInd += 1;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
+                sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Merge = true;
+                sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Value = "KÝ TÊN";
+                sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Merge = true;
+                sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
+                sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Style.Font.Bold = true;
                 rowInd++;
 
-                sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                sheet.Cells["A1:P" + rowInd.ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                sheet.Cells["A1:P" + (rowInd + 8).ToString()].AutoFitColumns();
+                sheet.Cells["A1:P" + (rowInd + 8).ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                sheet.Cells["A1:P" + (rowInd + 8).ToString()].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
                 foreach (var item in result)
                 {
@@ -1592,64 +1735,77 @@ namespace PhoDiem_TLU.Helpers
                     sheet.Cells["D" + num.ToString() + ":D" + (num + 1).ToString()].Merge = true;
                     sheet.Cells["D" + (num).ToString()].Value = $"{markOption}";
 
-                    //sheet.Cells["E" + num.ToString() + ":F" + (num).ToString()].Merge = true;
-                    //sheet.Cells["E" + (num).ToString()].Value = "Điểm A";
-                    //sheet.Cells["E" + (num + 1).ToString()].Value = "Tổng số điểm";
-                    //sheet.Cells["F" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm A";
-
-                    //sheet.Cells["G" + num.ToString() + ":H" + (num).ToString()].Merge = true;
-                    //sheet.Cells["G" + num.ToString()].Value = "Điểm B";
-                    //sheet.Cells["G" + (num + 1).ToString()].Value = "Tổng số điểm";
-                    //sheet.Cells["H" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm B";
-
-                    //sheet.Cells["I" + num.ToString() + ":J" + (num).ToString()].Merge = true;
-                    //sheet.Cells["I" + num.ToString()].Value = "Điểm C";
-                    //sheet.Cells["I" + (num + 1).ToString()].Value = "Tổng số điểm";
-                    //sheet.Cells["J" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm C";
-
-                    //sheet.Cells["K" + num.ToString() + ":L" + (num).ToString()].Merge = true;
-                    //sheet.Cells["K" + num.ToString()].Value = "Điểm D";
-                    //sheet.Cells["K" + (num + 1).ToString()].Value = "Tổng số điểm";
-                    //sheet.Cells["L" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm D";
-
-                    //sheet.Cells["M" + num.ToString() + ":N" + (num).ToString()].Merge = true;
-                    //sheet.Cells["M" + num.ToString()].Value = "Điểm F";
-                    //sheet.Cells["M" + (num + 1).ToString()].Value = "Tổng số điểm";
-                    //sheet.Cells["N" + (num + 1).ToString()].Value = "Tỉ lệ(%) điểm F";
-
-                    //sheet.Cells["O" + num.ToString() + ":O" + (num + 1).ToString()].Merge = true;
-                    //sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
+                    
 
                     sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
 
                     rowInd = num + 2;
                     int count = 1;
+                    tA = 0;tB = 0;tC = 0;tD = 0;tF = 0;
                     foreach (var i in list)
                     {
                         sheet.Cells[rowInd, 1].Value = count;
                         sheet.Cells[rowInd, 2].Value = i.studentcode;
                         sheet.Cells[rowInd, 3].Value = i.studentName;
                         sheet.Cells[rowInd, 4].Value = i.mark;
-                        //sheet.Cells[rowInd, 5].Value = item.A;
-                        //sheet.Cells[rowInd, 6].Value = item.rateA;
-                        //sheet.Cells[rowInd, 7].Value = item.B;
-                        //sheet.Cells[rowInd, 8].Value = item.rateB;
-                        //sheet.Cells[rowInd, 9].Value = item.C;
-                        //sheet.Cells[rowInd, 10].Value = item.rateC;
-                        //sheet.Cells[rowInd, 11].Value = item.D;
-                        //sheet.Cells[rowInd, 12].Value = item.rateD;
-                        //sheet.Cells[rowInd, 13].Value = item.F;
-                        //sheet.Cells[rowInd, 14].Value = item.rateF;
                         rowInd++;
                         count++;
+                        var mark = i.mark;
+                        if (mark <= 10 && mark >= 8.45) tA++;
+                        else if (mark <= 8.44 && mark >= 6.95) tB++;
+                        else if (mark <= 6.94 && mark >= 5.45) tC++;
+                        else if (mark <= 5.44 && mark >= 3.95) tD ++;
+                        else tF++;
                     }
 
+                    var waterfallChart1 = sheet.Drawings.AddPieChart("Phổ điểm kết quả " + $"{markOption}", ePieChartType.Pie);
+                    waterfallChart1.Title.Text = "Phổ điểm kết quả " + $"{markOption}";
+                    waterfallChart1.SetPosition(rowInd, 0, 5, 0);
+                    waterfallChart1.SetSize(250, 160);
+                    var wfSerie1 = waterfallChart1.Series.Add(sheet.Cells["C" + (rowInd + 3) + ":C" + (rowInd + 7)], sheet.Cells["A" + (rowInd + 3) + ":A" + (rowInd + 7)]);
+                    var dp1 = wfSerie1.DataPoints.Add(0);
+                    waterfallChart1.DataLabel.ShowPercent = true;
+                    dp1 = wfSerie1.DataPoints.Add(7);
+                    total = tA + tB + tC + tD + tF;
+
+                    sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Merge = true;
+                    sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + $"{markOption}";
+                    sheet.Cells["A" + (rowInd + 2)].Value = "Điểm chữ";
+                    sheet.Cells["B" + (rowInd + 2)].Value = "Điểm số";
+                    sheet.Cells["C" + (rowInd + 2)].Value = "Số SV";
+                    sheet.Cells["D" + (rowInd + 2)].Value = "Tỷ lệ %";
+                    sheet.Cells["A" + (rowInd + 3)].Value = "A";
+                    sheet.Cells["B" + (rowInd + 3)].Value = "8.45-10";
+                    sheet.Cells["C" + (rowInd + 3)].Value = tA;
+                    sheet.Cells["D" + (rowInd + 3)].Value = total == 0 ? "0" : tA * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 4)].Value = "B";
+                    sheet.Cells["B" + (rowInd + 4)].Value = "6.95-8.44";
+                    sheet.Cells["C" + (rowInd + 4)].Value = tB;
+                    sheet.Cells["D" + (rowInd + 4)].Value = total == 0 ? "0" : tB * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 5)].Value = "C";
+                    sheet.Cells["B" + (rowInd + 5)].Value = "5.45-6.94";
+                    sheet.Cells["C" + (rowInd + 5)].Value = tC;
+                    sheet.Cells["D" + (rowInd + 5)].Value = total == 0 ? "0" : tC * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 6)].Value = "D";
+                    sheet.Cells["B" + (rowInd + 6)].Value = "3.95-5.44";
+                    sheet.Cells["C" + (rowInd + 6)].Value = tD;
+                    sheet.Cells["D" + (rowInd + 6)].Value = total == 0 ? "0" : tD * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 7)].Value = "F";
+                    sheet.Cells["B" + (rowInd + 7)].Value = "0-3.94";
+                    sheet.Cells["C" + (rowInd + 7)].Value = tF;
+                    sheet.Cells["D" + (rowInd + 7)].Value = total == 0 ? "0" : tF * 100 / total + " %";
+
+
                     rowInd += 1;
-                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                    sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                    sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
+                    sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Merge = true;
+                    sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Value = "KÝ TÊN";
+                    sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Merge = true;
+                    sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
+                    sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Style.Font.Bold = true;
                     rowInd++;
 
                     sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
@@ -1848,6 +2004,11 @@ namespace PhoDiem_TLU.Helpers
                 sheet.Cells["O" + num.ToString()].Value = "Ghi chú";
 
                 sheet.Cells["A1:O" + (num + 1).ToString()].Style.Font.Bold = true;
+                long tA = 0;
+                long tB = 0;
+                long tC = 0;
+                long tD = 0;
+                long tF = 0;
 
                 int rowInd = num + 2;
                 foreach (var item in dataTable)
@@ -1867,14 +2028,56 @@ namespace PhoDiem_TLU.Helpers
                     sheet.Cells[rowInd, 13].Value = item.F;
                     sheet.Cells[rowInd, 14].Value = item.rateF;
                     rowInd++;
+                    tA += item.A; tB += item.B; tC += item.C; tD += item.D; tF += item.F;
                 }
 
+                var waterfallChart = sheet.Drawings.AddPieChart("Phổ điểm kết quả " + $"{markOption}", ePieChartType.Pie);
+                waterfallChart.Title.Text = "Phổ điểm kết quả " + $"{markOption}";
+                waterfallChart.SetPosition(rowInd, 0, 5, 0);
+                waterfallChart.SetSize(250, 160);
+                var wfSerie = waterfallChart.Series.Add(sheet.Cells["C" + (rowInd + 3) + ":C" + (rowInd + 7)], sheet.Cells["A" + (rowInd + 3) + ":A" + (rowInd + 7)]);
+                var dp = wfSerie.DataPoints.Add(0);
+                waterfallChart.DataLabel.ShowPercent = true;
+                dp = wfSerie.DataPoints.Add(7);
+                long total = tA + tB + tC + tD + tF;
+
+                sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Merge = true;
+                sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + $"{markOption}";
+                sheet.Cells["A" + (rowInd + 2)].Value = "Điểm chữ";
+                sheet.Cells["B" + (rowInd + 2)].Value = "Điểm số";
+                sheet.Cells["C" + (rowInd + 2)].Value = "Số SV";
+                sheet.Cells["D" + (rowInd + 2)].Value = "Tỷ lệ %";
+                sheet.Cells["A" + (rowInd + 3)].Value = "A";
+                sheet.Cells["B" + (rowInd + 3)].Value = "8.45-10";
+                sheet.Cells["C" + (rowInd + 3)].Value = tA;
+                sheet.Cells["D" + (rowInd + 3)].Value = total == 0 ? "0" : tA * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 4)].Value = "B";
+                sheet.Cells["B" + (rowInd + 4)].Value = "6.95-8.44";
+                sheet.Cells["C" + (rowInd + 4)].Value = tB;
+                sheet.Cells["D" + (rowInd + 4)].Value = total == 0 ? "0" : tB * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 5)].Value = "C";
+                sheet.Cells["B" + (rowInd + 5)].Value = "5.45-6.94";
+                sheet.Cells["C" + (rowInd + 5)].Value = tC;
+                sheet.Cells["D" + (rowInd + 5)].Value = total == 0 ? "0" : tC * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 6)].Value = "D";
+                sheet.Cells["B" + (rowInd + 6)].Value = "3.95-5.44";
+                sheet.Cells["C" + (rowInd + 6)].Value = tD;
+                sheet.Cells["D" + (rowInd + 6)].Value = total == 0 ? "0" : tD * 100 / total + " %";
+
+                sheet.Cells["A" + (rowInd + 7)].Value = "F";
+                sheet.Cells["B" + (rowInd + 7)].Value = "0-3.94";
+                sheet.Cells["C" + (rowInd + 7)].Value = tF;
+                sheet.Cells["D" + (rowInd + 7)].Value = total == 0 ? "0" : tF * 100 / total + " %";
+
                 rowInd += 1;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
+                sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Merge = true;
+                sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Value = "KÝ TÊN";
+                sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Merge = true;
+                sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
+                sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Style.Font.Bold = true;
                 rowInd++;
 
                 sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
@@ -1964,14 +2167,62 @@ namespace PhoDiem_TLU.Helpers
                         //sheet.Cells[rowInd, 14].Value = item.rateF;
                         rowInd++;
                         count++;
+                        var mark = i.mark;
+                        if (mark <= 10 && mark >= 8.45) tA++;
+                        else if (mark <= 8.44 && mark >= 6.95) tB++;
+                        else if (mark <= 6.94 && mark >= 5.45) tC++;
+                        else if (mark <= 5.44 && mark >= 3.95) tD++;
+                        else tF++;
                     }
 
+                    var waterfallChart1 = sheet.Drawings.AddPieChart("Phổ điểm kết quả " + $"{markOption}", ePieChartType.Pie);
+                    waterfallChart1.Title.Text = "Phổ điểm kết quả " + $"{markOption}";
+                    waterfallChart1.SetPosition(rowInd, 0, 5, 0);
+                    waterfallChart1.SetSize(250, 160);
+                    var wfSerie1 = waterfallChart1.Series.Add(sheet.Cells["C" + (rowInd + 3) + ":C" + (rowInd + 7)], sheet.Cells["A" + (rowInd + 3) + ":A" + (rowInd + 7)]);
+                    var dp1 = wfSerie1.DataPoints.Add(0);
+                    waterfallChart1.DataLabel.ShowPercent = true;
+                    dp1 = wfSerie1.DataPoints.Add(7);
+                    total = tA + tB + tC + tD + tF;
+
+                    sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Merge = true;
+                    sheet.Cells["A" + (rowInd + 1) + ":D" + (rowInd + 1)].Value = "BẢNG THỐNG KÊ KÊT QUẢ " + $"{markOption}";
+                    sheet.Cells["A" + (rowInd + 2)].Value = "Điểm chữ";
+                    sheet.Cells["B" + (rowInd + 2)].Value = "Điểm số";
+                    sheet.Cells["C" + (rowInd + 2)].Value = "Số SV";
+                    sheet.Cells["D" + (rowInd + 2)].Value = "Tỷ lệ %";
+                    sheet.Cells["A" + (rowInd + 3)].Value = "A";
+                    sheet.Cells["B" + (rowInd + 3)].Value = "8.45-10";
+                    sheet.Cells["C" + (rowInd + 3)].Value = tA;
+                    sheet.Cells["D" + (rowInd + 3)].Value = total == 0 ? "0" : tA * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 4)].Value = "B";
+                    sheet.Cells["B" + (rowInd + 4)].Value = "6.95-8.44";
+                    sheet.Cells["C" + (rowInd + 4)].Value = tB;
+                    sheet.Cells["D" + (rowInd + 4)].Value = total == 0 ? "0" : tB * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 5)].Value = "C";
+                    sheet.Cells["B" + (rowInd + 5)].Value = "5.45-6.94";
+                    sheet.Cells["C" + (rowInd + 5)].Value = tC;
+                    sheet.Cells["D" + (rowInd + 5)].Value = total == 0 ? "0" : tC * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 6)].Value = "D";
+                    sheet.Cells["B" + (rowInd + 6)].Value = "3.95-5.44";
+                    sheet.Cells["C" + (rowInd + 6)].Value = tD;
+                    sheet.Cells["D" + (rowInd + 6)].Value = total == 0 ? "0" : tD * 100 / total + " %";
+
+                    sheet.Cells["A" + (rowInd + 7)].Value = "F";
+                    sheet.Cells["B" + (rowInd + 7)].Value = "0-3.94";
+                    sheet.Cells["C" + (rowInd + 7)].Value = tF;
+                    sheet.Cells["D" + (rowInd + 7)].Value = total == 0 ? "0" : tF * 100 / total + " %";
+
+
                     rowInd += 1;
-                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Merge = true;
-                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd).ToString()].Value = "KÝ TÊN";
-                    sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Merge = true;
-                    sheet.Cells["K" + (rowInd + 1).ToString() + ":L" + (rowInd + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
-                    sheet.Cells["K" + (rowInd).ToString() + ":L" + (rowInd + 1).ToString()].Style.Font.Bold = true;
+                    sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Merge = true;
+                    sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8).ToString()].Value = "KÝ TÊN";
+                    sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Merge = true;
+                    sheet.Cells["K" + (rowInd + 8 + 1).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Value = "PHÒNG KHẢO THÍ";
+                    sheet.Cells["K" + (rowInd + 8).ToString() + ":L" + (rowInd + 8 + 1).ToString()].Style.Font.Bold = true;
                     rowInd++;
 
                     sheet.Cells["A1:P" + rowInd.ToString()].AutoFitColumns();
