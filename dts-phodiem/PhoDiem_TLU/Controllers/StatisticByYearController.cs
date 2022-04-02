@@ -271,65 +271,65 @@ namespace PhoDiem_TLU.Controllers
         //    }
         //}
 
-        public JsonResult GetMark(List<string> listId, string type, string subject, string year)
-        {
-            try
-            {
-                int[] listMark = { 0, 0, 0, 0, 0 };
-                int[] listMarkFinal = { 0, 0, 0, 0, 0 };
-                int[] listMarkQT = { 0, 0, 0, 0, 0 };
+        //public JsonResult GetMark(List<string> listId, string type, string subject, string year)
+        //{
+        //    try
+        //    {
+        //        int[] listMark = { 0, 0, 0, 0, 0 };
+        //        int[] listMarkFinal = { 0, 0, 0, 0, 0 };
+        //        int[] listMarkQT = { 0, 0, 0, 0, 0 };
 
-                var list_result = new List<IGrouping<dynamic, MarkBySemester>>();
-                if (listId != null && listId.Count != 0)
-                {
-                    if (type == "1")
-                    {
-                        long _subject = long.Parse(subject);
-                        long _year = long.Parse(year);
+        //        var list_result = new List<IGrouping<dynamic, MarkBySemester>>();
+        //        if (listId != null && listId.Count != 0)
+        //        {
+        //            if (type == "1")
+        //            {
+        //                long _subject = long.Parse(subject);
+        //                long _year = long.Parse(year);
 
-                        list_result.AddRange(data.GetMarkByYear(listId, _subject, _year));
-                    }
-                    else
-                    {
-                        long _subject = long.Parse(subject);
-                        long _year = long.Parse(year);
+        //                list_result.AddRange(data.GetMarkByYear(listId, _subject, _year));
+        //            }
+        //            else
+        //            {
+        //                long _subject = long.Parse(subject);
+        //                long _year = long.Parse(year);
 
-                        list_result.AddRange(data.GetMarkByClassYear(listId, _subject, _year));
-                    }
-                }
-                var resultExam = new List<MarkStatiticBySemester>();
-                var resultFinal = new List<MarkStatiticBySemester>();
-                var resultQt = new List<MarkStatiticBySemester>();
+        //                list_result.AddRange(data.GetMarkByClassYear(listId, _subject, _year));
+        //            }
+        //        }
+        //        var resultExam = new List<MarkStatiticBySemester>();
+        //        var resultFinal = new List<MarkStatiticBySemester>();
+        //        var resultQt = new List<MarkStatiticBySemester>();
 
-                int stt = 0;
-                foreach (var cl in list_result)
-                {
-                    int[] list_mark = { 0, 0, 0, 0, 0 };
-                    int[] list_mark_final = { 0, 0, 0, 0, 0 };
-                    int[] list_mark_QT = { 0, 0, 0, 0, 0 };
-                    int total = cl.Where(ss => ss.status == 0).ToList().Count;
-                    for (int i = 0; i < 5; i++)
-                    {
-                        list_mark[i] = cl.Where(ss => ss.status == 0 && getCharMark(ss.mark_exam) == i).ToList().Count;
-                        list_mark_final[i] = cl.Where(ss => ss.status == 0 && getCharMark(ss.mark_final) == i).ToList().Count;
-                        list_mark_QT[i] = cl.Where(ss => ss.status == 0 && getCharMark(ss.mark) == i).ToList().Count;
-                        listMark[i] += list_mark[i];
-                        listMarkFinal[i] += list_mark_final[i];
-                        listMarkQT[i] += list_mark_QT[i];
-                    }
-                    stt++;
-                    resultExam.Add(new MarkStatiticBySemester(stt, cl.Key.className.ToString(), cl.Key.teacherName.ToString(), list_mark[4], list_mark[3], list_mark[2], list_mark[1], list_mark[0], total, cl.Key.subject.ToString()));
-                    resultFinal.Add(new MarkStatiticBySemester(stt, cl.Key.ToString(), cl.Key.teacherName.ToString(), list_mark_final[4], list_mark_final[3], list_mark_final[2], list_mark_final[1], list_mark_final[0], total, cl.Key.subject.ToString()));
-                    resultQt.Add(new MarkStatiticBySemester(stt, cl.Key.ToString(), cl.Key.teacherName.ToString(), list_mark_QT[4], list_mark_QT[3], list_mark_QT[2], list_mark_QT[1], list_mark_QT[0], total, cl.Key.subject.ToString()));
+        //        int stt = 0;
+        //        foreach (var cl in list_result)
+        //        {
+        //            int[] list_mark = { 0, 0, 0, 0, 0 };
+        //            int[] list_mark_final = { 0, 0, 0, 0, 0 };
+        //            int[] list_mark_QT = { 0, 0, 0, 0, 0 };
+        //            int total = cl.Where(ss => ss.status == 0).ToList().Count;
+        //            for (int i = 0; i < 5; i++)
+        //            {
+        //                list_mark[i] = cl.Where(ss => ss.status == 0 && getCharMark(ss.mark_exam) == i).ToList().Count;
+        //                list_mark_final[i] = cl.Where(ss => ss.status == 0 && getCharMark(ss.mark_final) == i).ToList().Count;
+        //                list_mark_QT[i] = cl.Where(ss => ss.status == 0 && getCharMark(ss.mark) == i).ToList().Count;
+        //                listMark[i] += list_mark[i];
+        //                listMarkFinal[i] += list_mark_final[i];
+        //                listMarkQT[i] += list_mark_QT[i];
+        //            }
+        //            stt++;
+        //            resultExam.Add(new MarkStatiticBySemester(stt, cl.Key.className.ToString(), cl.Key.teacherName.ToString(), list_mark[4], list_mark[3], list_mark[2], list_mark[1], list_mark[0], total, cl.Key.subject.ToString()));
+        //            resultFinal.Add(new MarkStatiticBySemester(stt, cl.Key.ToString(), cl.Key.teacherName.ToString(), list_mark_final[4], list_mark_final[3], list_mark_final[2], list_mark_final[1], list_mark_final[0], total, cl.Key.subject.ToString()));
+        //            resultQt.Add(new MarkStatiticBySemester(stt, cl.Key.ToString(), cl.Key.teacherName.ToString(), list_mark_QT[4], list_mark_QT[3], list_mark_QT[2], list_mark_QT[1], list_mark_QT[0], total, cl.Key.subject.ToString()));
 
-                }
-                return Json(new { code = 200, data = resultExam, chart_mark = new { qt = listMarkQT, exam = listMark, final = listMarkFinal } }, JsonRequestBehavior.AllowGet);
-            }
-            catch (Exception e)
-            {
-                return Json(new { code = 500, data = "Không có dữ liệu!" }, JsonRequestBehavior.AllowGet);
-            }
-        }
+        //        }
+        //        return Json(new { code = 200, data = resultExam, chart_mark = new { qt = listMarkQT, exam = listMark, final = listMarkFinal } }, JsonRequestBehavior.AllowGet);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return Json(new { code = 500, data = "Không có dữ liệu!" }, JsonRequestBehavior.AllowGet);
+        //    }
+        //}
 
         public int getCharMark(string m)
         {

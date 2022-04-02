@@ -88,9 +88,11 @@ function getClass(type) {
     arrIndex.forEach((val, idx) => {
         let ss = semesterData[val.getAttribute('data-option-array-index') - 1]
         listSemester.add(ss.Value)
-    })
-    console.log(form.serializeArray());
+    });
     let dataForm = form.serializeArray();
+    dataForm.forEach(item => {
+        if (item.value == '') alert("Hãy chọn lại");
+    })
     $.ajax({
         method: form.attr('method'),
         url: form.attr('action'),
@@ -234,22 +236,20 @@ function setTable(data1) {
 }
 
 function setSemester(res) {
-    value.semester = res.value;
-    setFillter();
+    setFillterSemester();
 }
 function setSubject(res) {
     value.subject = res.value;
 }
 function setCourse(res) {
     value.course = res.value;
-    setFillter();
+    setFillterCourse();
 }
 function setPeriod(res) {
     value.period = res.value;
-    setFillter();
+    setFillterPeriod();
 }
-
-function setFillter() {
+function setFillterPeriod(){
     listSemester.clear();
     let arrIndex = [...$('li.result-selected')];
     arrIndex.forEach((val, idx) => {
@@ -257,33 +257,115 @@ function setFillter() {
         listSemester.add(ss.Value)
     })
     $.ajax({
-        url: '/Semester/getSubject',
+        url: '/Semester/getFilterPeriod',
         dataType: "json",
         type: 'POST',
-        data: { courseId: value.course, semesterId: [...listSemester], periodId: value.period },
+        data: { semesterId: [...listSemester], periodId: value.period, courseId: value.course },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr);
             console.log(ajaxOptions);
         }
     }).done(function (response) {
-        if (response.data != null) {
+
+        if (response.code == 200) {
+            let temp = $("#monHocSelect")
+            temp.empty();
+            temp.append('<option value="">Môn học</option>');
+            for (let i = 0; i < response.subject.length; i++) {
+                let k = '<option value=' + response.subject[i].id + '>' + response.subject[i].subject_name + '</option>';
+                temp.append(k)
+            }
+        }
+        else {
+            alert(response.data);
+        }
+    });
+    event.preventDefault(); // <- avoid reloading
+}
+function setFillterCourse(){
+    listSemester.clear();
+    let arrIndex = [...$('li.result-selected')];
+    arrIndex.forEach((val, idx) => {
+        let ss = semesterData[val.getAttribute('data-option-array-index') - 1]
+        listSemester.add(ss.Value)
+    })
+    $.ajax({
+        url: '/Semester/getFilterCourse',
+        dataType: "json",
+        type: 'POST',
+        data: { semesterId: [...listSemester], courseId: value.course},
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr);
+            console.log(ajaxOptions);
+        }
+    }).done(function (response) {
+
+        if (response.code == 200) {
+            let temp = $("#monHocSelect")
+            temp.empty();
+            temp.append('<option value="">Môn học</option>');
+            for (let i = 0; i < response.subject.length; i++) {
+                let k = '<option value=' + response.subject[i].id + '>' + response.subject[i].subject_name + '</option>';
+                temp.append(k)
+            }
+            let temp1 = $("#dotHocSelect")
+            temp1.empty();
+            temp1.append('<option value="">Đợt học</option>');
+            for (let i = 0; i < response.period.length; i++) {
+                let k = '<option value=' + response.period[i].id + '>' + response.period[i].name + '</option>';
+                temp1.append(k)
+            }
+        }
+        else {
+            alert(response.data);
+        }
+    });
+    event.preventDefault(); // <- avoid reloading
+}
+function setFillterSemester() {
+    listSemester.clear();
+    let arrIndex = [...$('li.result-selected')];
+    arrIndex.forEach((val, idx) => {
+        let ss = semesterData[val.getAttribute('data-option-array-index') - 1]
+        listSemester.add(ss.Value)
+    })
+    $.ajax({
+        url: '/Semester/getFilterSemester',
+        dataType: "json",
+        type: 'POST',
+        data: { semesterId: [...listSemester]},
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr);
+            console.log(ajaxOptions);
+        }
+    }).done(function (response) {
+
             if (response.code == 200) {
-                response.data = response.data.sort((a,b) => { return (a.subject_name >= b.subject_name?1:-1)});
                 let temp = $("#monHocSelect")
                 temp.empty();
                 temp.append('<option value="">Môn học</option>');
-                for (let i = 0; i < response.data.length; i++) {
-                    let k = '<option value=' + response.data[i].id + '>' + response.data[i].subject_name + '</option>';
+                for (let i = 0; i < response.subject.length; i++) {
+                    let k = '<option value=' + response.subject[i].id + '>' + response.subject[i].subject_name + '</option>';
                     temp.append(k)
+                }
+                let temp1 = $("#dotHocSelect")
+                temp1.empty();
+                temp1.append('<option value="">Đợt học</option>');
+                for (let i = 0; i < response.period.length; i++) {
+                    let k = '<option value=' + response.period[i].id + '>' + response.period[i].name + '</option>';
+                    temp1.append(k)
+                }
+                let temp2 = $("#khoaHocSelect")
+                temp2.empty();
+                temp2.append('<option value="">Khóa học</option>');
+                for (let i = 0; i < response.course.length; i++) {
+                    let k = '<option value=' + response.course[i].id + '>' + response.course[i].name + '</option>';
+                    temp2.append(k)
                 }
             }
             else {
                 alert(response.data);
             }
-        }
-        else {
-            alert("Kết nối thất bại!")
-        }
     });
     event.preventDefault(); // <- avoid reloading
 }

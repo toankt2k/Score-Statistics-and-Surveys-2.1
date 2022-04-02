@@ -11,7 +11,9 @@ namespace PhoDiem_TLU.ViewModels
         {
 
         }
-        public MarkStatiticBySemester(int stt, string _className, string _teacherName, long a, long b, long c, long d, long f, long total, string subjectName)
+        public MarkStatiticBySemester(int stt, string _className, string _teacherName,
+            long a, long b, long c, long d, long f, 
+            long total, string subjectName, string _department, string _semester)
         {
             this.stt = stt;
             this.className = _className;
@@ -27,8 +29,13 @@ namespace PhoDiem_TLU.ViewModels
             F = f;
             this.rateF = Math.Round((double)f * 100 / total,1) + " %";
             this.subjectName = subjectName;
+            this.department = _department;
+            this.semester = _semester;
         }
         public long stt { set; get; }
+        public string department { set; get; }
+        public string semester { set; get; }
+
         public string className { set; get; }
         public string teacherName { set; get; }
         public string subjectName { get; set; }

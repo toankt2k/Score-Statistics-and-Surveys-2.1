@@ -11,7 +11,7 @@ namespace PhoDiem_TLU.ViewModels
         {
 
         }
-        public MarkBySemester(string _class_name, string _student_code, string _student_name, string _teacherName, string _subject, double? _mark, double? _mark_exam, double? _mark_final, int? _gpa, double? _mark_gpa, string _note)
+        public MarkBySemester(string _class_name, string _student_code, string _student_name, string _teacherName, string _subject, double? _mark, double? _mark_exam, double? _mark_final, int? _gpa, double? _mark_gpa, string _note, string _department)
         {
             this.class_name = _class_name;
             this.student_code = _student_code;
@@ -28,6 +28,7 @@ namespace PhoDiem_TLU.ViewModels
             else if (_gpa == 1) this.gpa = 'D';
             this.mark_gpa = _mark_gpa;
             this.note = _note;
+            this.department = _department;
         }
 
         public string class_name { get; set; }
@@ -44,5 +45,6 @@ namespace PhoDiem_TLU.ViewModels
         public string note { get; set; }
         public long? status { get; set; }
         public string semester { get; set; }
+        public string department { get; set; }
     }
 }

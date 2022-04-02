@@ -38,7 +38,117 @@ namespace PhoDiem_TLU.Controllers
             //}
             //return RedirectToAction("Error", "Login");
         }
+        public JsonResult getFilterSemester(List<string> semesterId)
+        {
+            try
+            {
+                var semester_subjects = (from s in dbSet.tbl_semester_subject
+                                    where semesterId.Contains(s.semester_id.ToString())
+                                    select new
+                                    {
+                                        s.id,
+                                        s.subject_id,
+                                        s.course_year_id
+                                    }).ToList();
+                var list_periods = (from s in dbSet.tbl_semester_register_period
+                                    where semesterId.Contains(s.semeter_id.ToString())
+                                    select new
+                                    {
+                                        s.id,
+                                        s.name
+                                    }).ToList();
+                var list_subjectId = (from s in semester_subjects
+                                     select s.subject_id).ToList();
+                var list_courseId = (from s in semester_subjects
+                                     select s.course_year_id).ToList();
+                var list_subject = (from s in dbSet.tbl_subject
+                                    where list_subjectId.Contains(s.id)
+                                    select new
+                                    {
+                                        s.id,
+                                        s.subject_name
+                                    }).ToList();
+                var list_course = (from s in dbSet.tbl_course_year
+                                    where list_courseId.Contains(s.id)
+                                    select new
+                                    {
+                                        s.id,
+                                        s.name
+                                    }).ToList();
 
+                return Json(new { code = 200, subject = list_subject, period = list_periods,course = list_course }, JsonRequestBehavior.AllowGet);
+            }
+            catch
+            {
+                return Json(new { code = 500, data = "Không có dữ liệu!!" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+        public JsonResult getFilterCourse(List<string> semesterId, string courseId)
+        {
+            try
+            {
+                var semester_subjects = (from s in dbSet.tbl_semester_subject
+                                         where semesterId.Contains(s.semester_id.ToString())
+                                         && s.course_year_id.ToString() == courseId
+                                         select new
+                                         {
+                                             s.id,
+                                             s.subject_id,
+                                         }).ToList();
+                var list_periods = (from s in dbSet.tbl_semester_register_period
+                                    where semesterId.Contains(s.semeter_id.ToString())
+                                    select new
+                                    {
+                                        s.id,
+                                        s.name
+                                    }).ToList();
+                var list_subjectId = (from s in semester_subjects
+                                      select s.subject_id).ToList();
+                var list_subject = (from s in dbSet.tbl_subject
+                                    where list_subjectId.Contains(s.id)
+                                    select new
+                                    {
+                                        s.id,
+                                        s.subject_name
+                                    }).ToList();
+
+                return Json(new { code = 200, subject = list_subject, period = list_periods }, JsonRequestBehavior.AllowGet);
+            }
+            catch
+            {
+                return Json(new { code = 500, data = "Không có dữ liệu!!" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+        public JsonResult getFilterPeriod(List<string> semesterId, string courseId, string periodId)
+        {
+            try
+            {
+                var semester_subjects = (from s in dbSet.tbl_semester_subject
+                                         where semesterId.Contains(s.semester_id.ToString())
+                                         && s.course_year_id.ToString() == courseId
+                                         && s.register_period_id.ToString() == periodId
+                                         select new
+                                         {
+                                             s.id,
+                                             s.subject_id,
+                                         }).ToList();
+                var list_subjectId = (from s in semester_subjects
+                                      select s.subject_id).ToList();
+                var list_subject = (from s in dbSet.tbl_subject
+                                    where list_subjectId.Contains(s.id)
+                                    select new
+                                    {
+                                        s.id,
+                                        s.subject_name
+                                    }).ToList();
+
+                return Json(new { code = 200, subject = list_subject }, JsonRequestBehavior.AllowGet);
+            }
+            catch
+            {
+                return Json(new { code = 500, data = "Không có dữ liệu!!" }, JsonRequestBehavior.AllowGet);
+            }
+        }
         public JsonResult getSubject(List<string> semesterId, string periodId, string courseId)
         {
             long period_id = 0;
@@ -155,40 +265,6 @@ namespace PhoDiem_TLU.Controllers
             }
         }
 
-        //public JsonResult Export(string type, string subject, string semester, string data)//xuat 1 bang
-        //{
-        //    try
-        //    {
-        //        long _id = long.Parse(data);
-        //        var tp = type;
-        //        var subject_id = long.Parse(subject);
-        //        var semester_id = long.Parse(semester);
-
-        //        var semes = dbSet.tbl_semester.Find(semester_id);
-        //        var subj = dbSet.tbl_subject.Find(subject_id);
-
-        //        ExcelExport export = new ExcelExport();
-        //        var list_gr = new List<tbl_course_subject>();
-        //        var list_class = new List<tbl_enrollment_class>();
-        //        if (tp == "1")
-        //        {
-        //            list_gr = dbSet.tbl_course_subject.Where(s => s.id == _id).ToList();//tim 1 nhom
-        //            var result = export.ExportBySemester(list_gr, semes, subj);
-        //            return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
-        //        }
-        //        else
-        //        {
-        //            list_class = dbSet.tbl_enrollment_class.Where(s => s.id == _id).ToList();
-        //            var result = export.ExportByClass(list_class, semes, subj);
-        //            return Json(new { code = 200, name = "Phổ điểm" + semes.semester_name + ".xlsx", data = Convert.ToBase64String(result, 0, result.Length) }, JsonRequestBehavior.AllowGet);
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        return Json(new { code = 500, mgs = e.ToString() }, JsonRequestBehavior.AllowGet);
-        //    }
-        //}
-
         public JsonResult GetMark(List<string> listId, string type, string subject, List<string> semester)
         {
             try
@@ -235,9 +311,9 @@ namespace PhoDiem_TLU.Controllers
                         listMarkQT[i] += list_mark_QT[i];
                     }
                     stt++;
-                    resultExam.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(),cl.Key.teacherName.ToString(), list_mark[4], list_mark[3], list_mark[2], list_mark[1], list_mark[0], total, cl.Key.subject.ToString()));
-                    resultFinal.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(), cl.Key.teacherName.ToString(), list_mark_final[4], list_mark_final[3], list_mark_final[2], list_mark_final[1], list_mark_final[0], total, cl.Key.subject.ToString()));
-                    resultQt.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(), cl.Key.teacherName.ToString(), list_mark_QT[4], list_mark_QT[3], list_mark_QT[2], list_mark_QT[1], list_mark_QT[0], total, cl.Key.subject.ToString()));
+                    resultExam.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(),cl.Key.teacherName.ToString(), list_mark[4], list_mark[3], list_mark[2], list_mark[1], list_mark[0], total, cl.Key.subject.ToString(), cl.Key.department.ToString(), cl.Key.semester.ToString()));
+                    resultFinal.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(), cl.Key.teacherName.ToString(), list_mark_final[4], list_mark_final[3], list_mark_final[2], list_mark_final[1], list_mark_final[0], total, cl.Key.subject.ToString(), cl.Key.department.ToString(), cl.Key.semester.ToString()));
+                    resultQt.Add(new MarkStatiticBySemester(stt,cl.Key.className.ToString(), cl.Key.teacherName.ToString(), list_mark_QT[4], list_mark_QT[3], list_mark_QT[2], list_mark_QT[1], list_mark_QT[0], total, cl.Key.subject.ToString(), cl.Key.department.ToString(), cl.Key.semester.ToString()));
                     tt += total;
                 }
                 double[] listMark1 = { 0, 0, 0, 0, 0 };
