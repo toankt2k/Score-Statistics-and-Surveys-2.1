@@ -11,6 +11,6 @@
     "\\dts-phodiem\\PhoDiem_TLU\\Views\\Semester",
     "\\dts-phodiem\\PhoDiem_TLU\\Views\\User"
   ],
-  "SelectedNode": "\\dts-phodiem\\PhoDiem_TLU\\Controllers\\MarkController.cs",
+  "SelectedNode": "\\dts-phodiem\\PhoDiem_TLU\\Views\\Mark\\Index.cshtml",
   "PreviewInSolutionExplorer": false
 }
