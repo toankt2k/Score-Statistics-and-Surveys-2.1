@@ -2091,6 +2091,14 @@ namespace PhoDiem_TLU.DatabaseIO
 
                              join s5 in models.tbl_subject_exam
                              on s2.subject_exam_id equals s5.id
+                             join s6 in models.tbl_semester
+                            on s1.semester_id equals s6.id
+
+                             join s7 in models.tbl_subject
+                             on s1.subject_id equals s7.id
+
+                             join s8 in models.tbl_department
+                             on s7.department_id equals s8.id
 
                              where s1.subject_id == subject_id
                                       && listSemester.Contains((long)s1.semester_id)
@@ -2101,6 +2109,8 @@ namespace PhoDiem_TLU.DatabaseIO
                                  markFinal = s1.mark,
                                  mark4 = s1.mark4,
                                  note = s1.note,
+                                 semesterName = s6.semester_name,
+                                 departmentName = s8.name == null ? "" : s8.name
                              } into g
 
                              select new
@@ -2111,6 +2121,8 @@ namespace PhoDiem_TLU.DatabaseIO
                                  markFinal = g.Key.markFinal,
                                  mark4 = g.Key.mark4,
                                  note = g.Key.note,
+                                 semester = g.Key.semesterName,
+                                 department = g.Key.departmentName
                              }).ToList();
             var listStudent = (from s1 in models.tbl_course_subject
                                join s2 in models.tbl_student_course_subject
@@ -2145,6 +2157,7 @@ namespace PhoDiem_TLU.DatabaseIO
                            join s2 in listMark2
                            on s1.id equals s2.id into joined
                            from s2 in joined.DefaultIfEmpty()
+                           where s1.status == 0 || s1.status == null
                            let mark = s2 == null ? null : s2.mark.Where(m => m.type == 2).FirstOrDefault()
                            let markExam = s2 == null ? null : s2.mark.Where(m => m.type == 3).FirstOrDefault()
                            select new MarkBySemester(
@@ -2154,9 +2167,11 @@ namespace PhoDiem_TLU.DatabaseIO
                               (double)(s2 == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal),
                               (int)(s2 == null ? -1 : s2.mark4 == null ? -1 : s2.mark4 == null ? 0 : s2.mark4),
                               (double)(s2 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4),
-                              s2 == null ? "" : s2.note
+                              s2 == null ? "" : s2.note,
+                              s2 == null ? "" : s2.department
                               )
-                           { status = (long)(s2 == null ? -1 : s1.status == null ? 0 : s1.status) }
+                           { status = (long)(s2 == null ? -1 : s1.status == null ? 0 : s1.status) ,
+                           semester = s2.semester}
                        ).ToList();
 
             var result = list_result.GroupBy(s => new { className = s.class_name, teacherName = s.teacher_name, subject = s.subject });
@@ -2184,6 +2199,14 @@ namespace PhoDiem_TLU.DatabaseIO
                              join s5 in models.tbl_subject_exam
                              on s2.subject_exam_id equals s5.id
 
+                             join s6 in models.tbl_semester
+                            on s1.semester_id equals s6.id
+
+                             join s7 in models.tbl_subject
+                             on s1.subject_id equals s7.id
+
+                             join s8 in models.tbl_department
+                             on s7.department_id equals s8.id
                              where s1.subject_id == subject_id
                                       && listSemester.Contains((long)s1.semester_id)
                              group new { mark = s2.mark, type = s5.subject_exam_type_id } by new
@@ -2193,6 +2216,8 @@ namespace PhoDiem_TLU.DatabaseIO
                                  markFinal = s1.mark,
                                  mark4 = s1.mark4,
                                  note = s1.note,
+                                 semesterName = s6.semester_name,
+                                 departmentName = s8.name == null ? "" : s8.name
                              } into g
 
                              select new
@@ -2203,6 +2228,8 @@ namespace PhoDiem_TLU.DatabaseIO
                                  markFinal = g.Key.markFinal,
                                  mark4 = g.Key.mark4,
                                  note = g.Key.note,
+                                 semester = g.Key.semesterName,
+                                 department = g.Key.departmentName
                              }).ToList();
 
 
@@ -2247,6 +2274,7 @@ namespace PhoDiem_TLU.DatabaseIO
                            join s2 in listMark2
                            on s1.id equals s2.id into joined
                            from s2 in joined.DefaultIfEmpty()
+                           where s1.status == 0 || s1.status == null
                            let mark = s2 == null ? null : s2.mark.Where(m => m.type == 2).FirstOrDefault()
                            let markExam = s2 == null ? null : s2.mark.Where(m => m.type == 3).FirstOrDefault()
                            select new MarkBySemester(
@@ -2256,9 +2284,11 @@ namespace PhoDiem_TLU.DatabaseIO
                               (double)(s2 == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal),
                               (int)(s2 == null ? -1 : s2.mark4 == null ? -1 : s2.mark4 == null ? 0 : s2.mark4),
                               (double)(s2 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4),
-                              s2 == null ? "" : s2.note
+                              s2 == null ? "" : s2.note,
+                              s2 == null ? "" : s2.department
                               )
-                           { status = (long)(s2 == null ? -1 : s1.status == null ? 0 : s1.status) }
+                           { status = (long)(s2 == null ? -1 : s1.status == null ? 0 : s1.status) ,
+                           semester = s2.semester}
                        ).ToList();
 
             var result = list_result.GroupBy(s => new { className = s.class_name, teacherName = s.teacher_name, subject = s.subject });
@@ -2283,8 +2313,15 @@ namespace PhoDiem_TLU.DatabaseIO
                             join s5 in models.tbl_subject_exam
                             on s2.subject_exam_id equals s5.id
 
+                            join s6 in models.tbl_semester
+                            on s1.semester_id equals s6.id
 
-                            where s1.subject_id == subject_id
+                            join s7 in models.tbl_subject
+                            on s1.subject_id equals s7.id
+
+                             join s8 in models.tbl_department
+                             on s7.department_id equals s8.id
+                             where s1.subject_id == subject_id
                                      && semester_id.Contains(s1.semester_id.ToString())
 
                             group new {mark = s2.mark, type = s5.subject_exam_type_id} by new
@@ -2294,7 +2331,8 @@ namespace PhoDiem_TLU.DatabaseIO
                                 markFinal = s1.mark,
                                 mark4 = s1.mark4,
                                 note = s1.note,
-                                semesterName = s1.semester_id,
+                                semesterName = s6.semester_name,
+                                departmentName = s8.name==null?"": s8.name
                             } into g
 
                             select new {
@@ -2305,7 +2343,9 @@ namespace PhoDiem_TLU.DatabaseIO
                                 mark4 = g.Key.mark4,
                                 note = g.Key.note,
                                 semesteName = g.Key.semesterName,
+                                department = g.Key.departmentName
                             }).ToList();
+
             #region 
             var listStudent = (from s1 in models.tbl_course_subject
                                 join s2 in models.tbl_student_course_subject
@@ -2340,6 +2380,7 @@ namespace PhoDiem_TLU.DatabaseIO
                             join s2 in listMark2
                             on s1.id equals s2.id into joined
                             from s2 in joined.DefaultIfEmpty()
+                            where s1.status==0||s1.status==null
                             let mark = s2 == null ? null : s2.mark.Where(m => m.type == 2).FirstOrDefault()
                             let markExam = s2 == null ? null : s2.mark.Where(m => m.type == 3).FirstOrDefault()
                             select new MarkBySemester(
@@ -2349,16 +2390,21 @@ namespace PhoDiem_TLU.DatabaseIO
                                (double)(s2==null?-1:s2.markFinal == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal),
                                (int)(s2==null?-1:s2.mark4 == null ? -1 : s2.mark4 == null ? 0 : s2.mark4),
                                (double)(s2 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4),
-                               s2==null?"":s2.note
-                               )
+                               s2==null?"":s2.note,
+                                s2 == null ? "" : s2.department)
                             { 
                                 status = (long)(s2==null?-1:s1.status == null ? 0 : s1.status),
                                 semester = (string)(s2 == null ? "" : s2.semesteName == null ? "" : s2.semesteName+"")
                             }
                        ).ToList();
 
-            var result = list_result.GroupBy(s => new {className = s.class_name, teacherName = s.teacher_name, subject = s.subject });
-            
+            var result = list_result.GroupBy(s => new {
+                className = s.class_name,
+                teacherName = s.teacher_name,
+                subject = s.subject,
+                department = s.department,
+                semester = s.semester
+            });
             return result;
         }
         public IEnumerable<IGrouping<dynamic, MarkBySemester>> GetMarkByClass(List<string> listId, long subject_id, List<string> semester_id)
@@ -2376,7 +2422,14 @@ namespace PhoDiem_TLU.DatabaseIO
 
                              join s5 in models.tbl_subject_exam
                              on s2.subject_exam_id equals s5.id
+                             join s6 in models.tbl_semester
+                            on s1.semester_id equals s6.id
 
+                             join s7 in models.tbl_subject
+                             on s1.subject_id equals s7.id
+
+                             join s8 in models.tbl_department
+                             on s7.department_id equals s8.id
                              where s1.subject_id == subject_id
                                       && semester_id.Contains(s1.semester_id.ToString())
                              group new { mark = s2.mark, type = s5.subject_exam_type_id } by new
@@ -2386,6 +2439,8 @@ namespace PhoDiem_TLU.DatabaseIO
                                  markFinal = s1.mark,
                                  mark4 = s1.mark4,
                                  note = s1.note,
+                                 semesterName = s6.semester_name,
+                                 departmentName = s8.name == null ? "" : s8.name
                              } into g
 
                              select new
@@ -2396,6 +2451,8 @@ namespace PhoDiem_TLU.DatabaseIO
                                  markFinal = g.Key.markFinal,
                                  mark4 = g.Key.mark4,
                                  note = g.Key.note,
+                                 semester = g.Key.semesterName,
+                                 department=g.Key.departmentName
                              }).ToList();
 
 
@@ -2440,6 +2497,7 @@ namespace PhoDiem_TLU.DatabaseIO
                            join s2 in listMark2
                            on s1.id equals s2.id into joined
                            from s2 in joined.DefaultIfEmpty()
+                           where s1.status == 0 || s1.status == null
                            let mark = s2 == null ? null : s2.mark.Where(m => m.type == 2).FirstOrDefault()
                            let markExam = s2 == null ? null : s2.mark.Where(m => m.type == 3).FirstOrDefault()
                            select new MarkBySemester(
@@ -2449,12 +2507,17 @@ namespace PhoDiem_TLU.DatabaseIO
                               (double)(s2 == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal == null ? -1 : s2.markFinal),
                               (int)(s2 == null ? -1 : s2.mark4 == null ? -1 : s2.mark4 == null ? 0 : s2.mark4),
                               (double)(s2 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4 == null ? 0 : s2.mark4),
-                              s2 == null ? "" : s2.note
+                              s2 == null ? "" : s2.note,
+                              s2 == null ? "" : s2.department
                               )
-                           { status = (long)(s2 == null ? -1 : s1.status == null ? 0 : s1.status) }
+                           { status = (long)(s2 == null ? -1 : s1.status == null ? 0 : s1.status),
+                            semester = s2.semester
+                           }
                        ).ToList();
 
-            var result = list_result.GroupBy(s => new { className = s.class_name, teacherName = s.teacher_name, subject = s.subject });
+            var result = list_result.GroupBy(s => new { className = s.class_name, teacherName = s.teacher_name,
+                subject = s.subject,
+                department = s.department, semester = s.semester });
 
             return result;
         }
