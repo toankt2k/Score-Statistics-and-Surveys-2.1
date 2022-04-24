@@ -808,10 +808,14 @@ namespace PhoDiem_TLU.DatabaseIO
                                    enrollmentClassID = enrollmentClass.id,
                                    enrollmentClassName = enrollmentClass.className,
                                    departmentID = department.id,
-                                   departmentName = department.name
+                                   departmentName = department.name,
+                                   semesterID = semeter.id,
+                                   semesterName = semeter.semester_name
 
-                               }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentCode, x.mark, x.courseSubjectID,
-                               x.courseSubjectName, x.teacherID,x.teacherName, x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
+                               }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentCode, 
+                               x.mark, x.courseSubjectID,x.courseSubjectName, x.teacherID,x.teacherName,
+                               x.enrollmentClassID, x.enrollmentClassName, x.departmentID, 
+                               x.departmentName,x.semesterID,x.semesterName
 
                                )).ToList();
 
@@ -860,6 +864,8 @@ namespace PhoDiem_TLU.DatabaseIO
             //}
             //return result;
         }
+
+        //Lấy điểm tổng kết của từng học sinh 
         public List<StudentMarkViewModel> getStudentMark(long? subjectID, long? semesterIDStart, long? semesterIDEnd)
         {
             var studentMarkViewModels = (from semeter in models.tbl_semester
@@ -907,18 +913,24 @@ namespace PhoDiem_TLU.DatabaseIO
                                              enrollmentClassID = enrollmentClass.id,
                                              enrollmentClassName = enrollmentClass.className,
                                              departmentID = department.id,
-                                             departmentName = department.name
+                                             departmentName = department.name,
+                                             semesterID = semeter.id,
+                                             semesterName = semeter.semester_name
 
-                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentCode, x.mark, x.courseSubjectID,
-                                         x.courseSubjectName, x.teacherID, x.teacherName, x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
+                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID,
+                                            x.studentCode,
+                                           x.mark, x.courseSubjectID, x.courseSubjectName, x.teacherID,
+                                           x.teacherName,
+                                           x.enrollmentClassID, x.enrollmentClassName, x.departmentID,
+                                           x.departmentName, x.semesterID, x.semesterName
 
-                                         )).ToList();
+                                           )).ToList();
 
             return studentMarkViewModels;
         }
-        public List<StudentMarkViewModel> getStudentMarkExcelDepartment(long? subjectID, long? semesterIDStart,
-            long? semesterIDEnd, long? subject_exam_type_id, List<long?> iDCheckeds)
+        public List<StudentMarkViewModel> getStudentMarkExcelDepartment(long? subjectID,long? semesterIDStart,long? semesterIDEnd, long? subject_exam_type_id, List<InputExport> iDCheckeds)
         {
+            
             var studentMarkViewModels = (from semeter in models.tbl_semester
                                          join semesterSubject in models.tbl_semester_subject
                                          on semeter.id equals semesterSubject.semester_id
@@ -950,9 +962,6 @@ namespace PhoDiem_TLU.DatabaseIO
                                          join department in models.tbl_department
                                          on enrollmentClass.department_id equals department.id
 
-                                         join long numcheckedList in iDCheckeds
-                                         on department.id equals numcheckedList
-
                                          where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
                                          && subject.id == subjectID
                                          && studentMark.subject_id == subjectID
@@ -961,28 +970,51 @@ namespace PhoDiem_TLU.DatabaseIO
                                          select new
                                          {
                                              studentID = student.id,
-                                             studentName = person.display_name,
                                              studentCode = student.student_code,
                                              mark = studentMark.mark,
                                              courseSubjectID = courseSubject.id,
                                              courseSubjectName = courseSubject.display_name,
                                              teacherID = courseSubject.teacher_id,
+                                             studentName = person.display_name,
                                              enrollmentClassID = enrollmentClass.id,
                                              enrollmentClassName = enrollmentClass.className,
                                              departmentID = department.id,
-                                             departmentName = department.name
+                                             departmentName = department.name,
+                                             semesterID = semeter.id,
+                                             semesterName = semeter.semester_name
 
-                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
-                                         x.studentCode, x.mark, x.courseSubjectID,
-                                         x.courseSubjectName, x.teacherID,x.enrollmentClassID,
-                                         x.enrollmentClassName, x.departmentID, x.departmentName
+                                         }).ToList();
+            var result = (from s in studentMarkViewModels
+                          join i in iDCheckeds
+                         on s.departmentID equals i.departmentId
+                         //join person in models.tbl_person
+                         //on s.studentID equals person.id
+                         where s.enrollmentClassID == i.enrollmentClassId
+                         && s.semesterID == i.semesterId
+                         select new
+                         {
+                             studentID = s.studentID,
+                             studentCode = s.studentCode,
+                             mark = s.mark,
+                             courseSubjectID = s.courseSubjectID,
+                             courseSubjectName = s.courseSubjectName,
+                             teacherID = s.teacherID,
+                             studentName = s.studentName,
+                             enrollmentClassID = s.enrollmentClassID,
+                             enrollmentClassName = s.enrollmentClassName,
+                             departmentID = s.departmentID,
+                             departmentName = s.departmentName,
+                             semesterID = s.semesterID,
+                             semesterName = s.semesterName
+                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID,x.studentName,x.studentCode,
+                                         x.mark, x.courseSubjectID, x.courseSubjectName, x.teacherID,
+                                         x.enrollmentClassID, x.enrollmentClassName, x.departmentID,
+                                         x.departmentName, x.semesterID, x.semesterName)).ToList();
 
-                                         )).ToList();
-
-            return studentMarkViewModels;
+            return result;
         }
         public List<StudentMarkViewModel> getStudentMarkExcelDepartment(long? subjectID, long? semesterIDStart, 
-            long? semesterIDEnd, List<long?> iDCheckeds)
+            long? semesterIDEnd, List<InputExport> iDCheckeds)
         {
             var studentMarkViewModels = (from semeter in models.tbl_semester
                                          join semesterSubject in models.tbl_semester_subject
@@ -1012,9 +1044,6 @@ namespace PhoDiem_TLU.DatabaseIO
                                          join department in models.tbl_department
                                          on enrollmentClass.department_id equals department.id
 
-                                         join long numcheckedList in iDCheckeds
-                                         on department.id equals numcheckedList
-
                                          where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
                                          && subject.id == subjectID
                                          && studentSubjectMark.subject_id == subjectID
@@ -1032,18 +1061,41 @@ namespace PhoDiem_TLU.DatabaseIO
                                              enrollmentClassID = enrollmentClass.id,
                                              enrollmentClassName = enrollmentClass.className,
                                              departmentID = department.id,
-                                             departmentName = department.name
+                                             departmentName = department.name,
+                                             semesterID = semeter.id,
+                                             semesterName = semeter.semester_name
 
-                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
-                                         x.studentCode, x.mark, x.courseSubjectID,
-                                         x.courseSubjectName, x.teacherID,
-                                         x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
+                                         }).ToList();
 
-                                         )).ToList();
+            var result = (from s in studentMarkViewModels
+                          join i in iDCheckeds
+                         on s.departmentID equals i.departmentId
+                          where s.enrollmentClassID == i.enrollmentClassId
+                          && s.semesterID == i.semesterId
+                          select new
+                          {
+                              studentID = s.studentID,
+                              studentName = s.studentName,
+                              studentCode = s.studentCode,
+                              mark = s.mark,
+                              courseSubjectID = s.courseSubjectID,
+                              courseSubjectName = s.courseSubjectName,
+                              teacherID = s.teacherID,
+                              enrollmentClassID = s.enrollmentClassID,
+                              enrollmentClassName = s.enrollmentClassName,
+                              departmentID = s.departmentID,
+                              departmentName = s.departmentName,
+                              semesterID = s.semesterID,
+                              semesterName = s.semesterName
+                          }).ToList().Select(x => new StudentMarkViewModel(x.studentID,x.studentName, x.studentCode,
+                                          x.mark, x.courseSubjectID, x.courseSubjectName, x.teacherID,
+                                          x.enrollmentClassID, x.enrollmentClassName, x.departmentID,
+                                          x.departmentName, x.semesterID, x.semesterName)).ToList();
 
-            return studentMarkViewModels;
+            return result;
         }
-        public List<StudentMarkViewModel> getStudentMarkExcelTeacher(long? subjectID, long? semesterIDStart, long? semesterIDEnd, long? subject_exam_type_id, List<long?> iDCheckeds)
+        public List<StudentMarkViewModel> getStudentMarkExcelTeacher(long? subjectID, long? semesterIDStart,
+            long? semesterIDEnd, long? subject_exam_type_id, List<InputExport> iDCheckeds)
         {
             var studentMarkViewModels = (from semeter in models.tbl_semester
                                          join semesterSubject in models.tbl_semester_subject
@@ -1079,9 +1131,6 @@ namespace PhoDiem_TLU.DatabaseIO
                                          join department in models.tbl_department
                                          on enrollmentClass.department_id equals department.id
 
-                                         join long numcheckedList in iDCheckeds
-                                         on courseSubject.teacher_id equals numcheckedList
-
                                          where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
                                          && subject.id == subjectID
                                          && studentMark.subject_id == subjectID
@@ -1100,18 +1149,48 @@ namespace PhoDiem_TLU.DatabaseIO
                                              enrollmentClassID = enrollmentClass.id,
                                              enrollmentClassName = enrollmentClass.className,
                                              departmentID = department.id,
-                                             departmentName = department.name
+                                             departmentName = department.name,
+                                             semesterID = semeter.id,
+                                             semesterName = semeter.semester_name
 
-                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
+                                         }).ToList();
+
+            var result = (from i in iDCheckeds
+                          join s in studentMarkViewModels
+                          on i.teacherId equals s.teacherID
+
+                          where s.semesterID == i.semesterId
+                          && s.courseSubjectID == i.courseSubjectId
+
+                          select new
+                          {
+                              studentID = s.studentID,
+                              studentName = s.studentName,
+                              studentCode = s.studentCode,
+                              mark = s.mark,
+                              courseSubjectID = s.courseSubjectID,
+                              courseSubjectName = s.courseSubjectName,
+                              teacherID = s.teacherID,
+                              teacherName = s.teacherName,
+                              enrollmentClassID = s.enrollmentClassID,
+                              enrollmentClassName = s.enrollmentClassName,
+                              departmentID = s.departmentID,
+                              departmentName = s.departmentName,
+                              semesterID = s.semesterID,
+                              semesterName = s.semesterName
+                          }
+                          ).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
                                          x.studentCode, x.mark, x.courseSubjectID,
-                                         x.courseSubjectName, x.teacherID,x.teacherName, x.enrollmentClassID,
-                                         x.enrollmentClassName, x.departmentID, x.departmentName
+                                         x.courseSubjectName, x.teacherID, x.teacherName, x.enrollmentClassID,
+                                         x.enrollmentClassName,
+                                         x.semesterID,x.semesterName
 
                                          )).ToList();
 
-            return studentMarkViewModels;
+            return result;
         }
-        public List<StudentMarkViewModel> getStudentMarkExcelTeacher(long? subjectID, long? semesterIDStart, long? semesterIDEnd, List<long?> iDCheckeds)
+        public List<StudentMarkViewModel> getStudentMarkExcelTeacher(long? subjectID, long? semesterIDStart,
+            long? semesterIDEnd, List<InputExport> iDCheckeds)
         {
             var studentMarkViewModels = (from semeter in models.tbl_semester
                                          join semesterSubject in models.tbl_semester_subject
@@ -1144,9 +1223,6 @@ namespace PhoDiem_TLU.DatabaseIO
                                          join department in models.tbl_department
                                          on enrollmentClass.department_id equals department.id
 
-                                         join long numcheckedList in iDCheckeds
-                                         on courseSubject.teacher_id equals numcheckedList
-
                                          where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
                                          && subject.id == subjectID
                                          && studentSubjectMark.subject_id == subjectID
@@ -1165,384 +1241,459 @@ namespace PhoDiem_TLU.DatabaseIO
                                              enrollmentClassID = enrollmentClass.id,
                                              enrollmentClassName = enrollmentClass.className,
                                              departmentID = department.id,
-                                             departmentName = department.name
+                                             departmentName = department.name,
+                                             semesterID = semeter.id,
+                                             semesterName = semeter.semester_name
 
-                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
+                                         }).ToList();
+
+            var result = (from i in iDCheckeds
+                          join s in studentMarkViewModels
+                          on i.teacherId equals s.teacherID
+
+                          where s.semesterID == i.semesterId
+                          && s.courseSubjectID == i.courseSubjectId
+
+                          select new
+                          {
+                              studentID = s.studentID,
+                              studentName = s.studentName,
+                              studentCode = s.studentCode,
+                              mark = s.mark,
+                              courseSubjectID = s.courseSubjectID,
+                              courseSubjectName = s.courseSubjectName,
+                              teacherID = s.teacherID,
+                              teacherName = s.teacherName,
+                              enrollmentClassID = s.enrollmentClassID,
+                              enrollmentClassName = s.enrollmentClassName,
+                              departmentID = s.departmentID,
+                              departmentName = s.departmentName,
+                              semesterID = s.semesterID,
+                              semesterName = s.semesterName
+                          }
+                          ).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
                                          x.studentCode, x.mark, x.courseSubjectID,
-                                         x.courseSubjectName, x.teacherID,x.teacherName,
-                                         x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
+                                         x.courseSubjectName, x.teacherID, x.teacherName, x.enrollmentClassID,
+                                         x.enrollmentClassName,
+                                         x.semesterID, x.semesterName
 
                                          )).ToList();
 
-            return studentMarkViewModels;
+            return result;
         }
-        public List<StudentMarkViewModel> getStudentMarkExcelEnrollmentClass(long? subjectID, long? semesterIDStart,
-            long? semesterIDEnd, long? subject_exam_type_id, List<long?> iDCheckeds)
-        {
-            var studentMarkViewModels = (from semeter in models.tbl_semester
-                                         join semesterSubject in models.tbl_semester_subject
-                                         on semeter.id equals semesterSubject.semester_id
+        //public List<StudentMarkViewModel> getStudentMarkExcelEnrollmentClass(long? subjectID, long? semesterIDStart,
+        //    long? semesterIDEnd, long? subject_exam_type_id, List<long?> iDCheckeds)
+        //{
+        //    var studentMarkViewModels = (from semeter in models.tbl_semester
+        //                                 join semesterSubject in models.tbl_semester_subject
+        //                                 on semeter.id equals semesterSubject.semester_id
 
-                                         join subject in models.tbl_subject
-                                         on semesterSubject.subject_id equals subject.id
+        //                                 join subject in models.tbl_subject
+        //                                 on semesterSubject.subject_id equals subject.id
 
-                                         join courseSubject in models.tbl_course_subject
-                                         on semesterSubject.id equals courseSubject.semester_subject_id
+        //                                 join courseSubject in models.tbl_course_subject
+        //                                 on semesterSubject.id equals courseSubject.semester_subject_id
 
-                                         join studentCourseSubject in models.tbl_student_course_subject
-                                         on courseSubject.id equals studentCourseSubject.course_subject_id
+        //                                 join studentCourseSubject in models.tbl_student_course_subject
+        //                                 on courseSubject.id equals studentCourseSubject.course_subject_id
 
-                                         join student in models.tbl_student
-                                         on studentCourseSubject.student_id equals student.id
+        //                                 join student in models.tbl_student
+        //                                 on studentCourseSubject.student_id equals student.id
 
-                                         join studentMark in models.tbl_student_mark
-                                         on student.id equals studentMark.student_id
+        //                                 join studentMark in models.tbl_student_mark
+        //                                 on student.id equals studentMark.student_id
 
-                                         join person in models.tbl_person
-                                         on student.id equals person.id
+        //                                 join person in models.tbl_person
+        //                                 on student.id equals person.id
 
-                                         join subjectExam in models.tbl_subject_exam
-                                         on studentMark.subject_exam_id equals subjectExam.id
+        //                                 join subjectExam in models.tbl_subject_exam
+        //                                 on studentMark.subject_exam_id equals subjectExam.id
 
-                                         join enrollmentClass in models.tbl_enrollment_class
-                                         on student.class_id equals enrollmentClass.id
+        //                                 join enrollmentClass in models.tbl_enrollment_class
+        //                                 on student.class_id equals enrollmentClass.id
 
-                                         join department in models.tbl_department
-                                         on enrollmentClass.department_id equals department.id
+        //                                 join department in models.tbl_department
+        //                                 on enrollmentClass.department_id equals department.id
 
-                                         join long numcheckedList in iDCheckeds
-                                         on enrollmentClass.id equals numcheckedList
+        //                                 join long numcheckedList in iDCheckeds
+        //                                 on enrollmentClass.id equals numcheckedList
 
-                                         where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
-                                         && subject.id == subjectID
-                                         && studentMark.subject_id == subjectID
-                                         && subjectExam.subject_exam_type_id == subject_exam_type_id
+        //                                 where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
+        //                                 && subject.id == subjectID
+        //                                 && studentMark.subject_id == subjectID
+        //                                 && subjectExam.subject_exam_type_id == subject_exam_type_id
 
-                                         select new
-                                         {
-                                             studentID = student.id,
-                                             studentName = person.display_name,
-                                             studentCode = student.student_code,
-                                             mark = studentMark.mark,
-                                             courseSubjectID = courseSubject.id,
-                                             courseSubjectName = courseSubject.display_name,
-                                             teacherID = courseSubject.teacher_id,
-                                             enrollmentClassID = enrollmentClass.id,
-                                             enrollmentClassName = enrollmentClass.className,
-                                             departmentID = department.id,
-                                             departmentName = department.name
+        //                                 select new
+        //                                 {
+        //                                     studentID = student.id,
+        //                                     studentName = person.display_name,
+        //                                     studentCode = student.student_code,
+        //                                     mark = studentMark.mark,
+        //                                     courseSubjectID = courseSubject.id,
+        //                                     courseSubjectName = courseSubject.display_name,
+        //                                     teacherID = courseSubject.teacher_id,
+        //                                     enrollmentClassID = enrollmentClass.id,
+        //                                     enrollmentClassName = enrollmentClass.className,
+        //                                     departmentID = department.id,
+        //                                     departmentName = department.name
 
-                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
-                                         x.studentCode, x.mark, x.courseSubjectID,
-                                         x.courseSubjectName, x.teacherID, x.enrollmentClassID,
-                                         x.enrollmentClassName, x.departmentID, x.departmentName
+        //                                 }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
+        //                                 x.studentCode, x.mark, x.courseSubjectID,
+        //                                 x.courseSubjectName, x.teacherID, x.enrollmentClassID,
+        //                                 x.enrollmentClassName, x.departmentID, x.departmentName
 
-                                         )).ToList();
+        //                                 )).ToList();
 
-            return studentMarkViewModels;
-        }
-        public List<StudentMarkViewModel> getStudentMarkExcelEnrollmentClass(long? subjectID, long? semesterIDStart,
-            long? semesterIDEnd, List<long?> iDCheckeds)
-        {
-            var studentMarkViewModels = (from semeter in models.tbl_semester
-                                         join semesterSubject in models.tbl_semester_subject
-                                         on semeter.id equals semesterSubject.semester_id
+        //    return studentMarkViewModels;
+        //}
+        //public List<StudentMarkViewModel> getStudentMarkExcelEnrollmentClass(long? subjectID, long? semesterIDStart,
+        //    long? semesterIDEnd, List<long?> iDCheckeds)
+        //{
+        //    var studentMarkViewModels = (from semeter in models.tbl_semester
+        //                                 join semesterSubject in models.tbl_semester_subject
+        //                                 on semeter.id equals semesterSubject.semester_id
 
-                                         join subject in models.tbl_subject
-                                         on semesterSubject.subject_id equals subject.id
+        //                                 join subject in models.tbl_subject
+        //                                 on semesterSubject.subject_id equals subject.id
 
-                                         join courseSubject in models.tbl_course_subject
-                                         on semesterSubject.id equals courseSubject.semester_subject_id
+        //                                 join courseSubject in models.tbl_course_subject
+        //                                 on semesterSubject.id equals courseSubject.semester_subject_id
 
-                                         join studentCourseSubject in models.tbl_student_course_subject
-                                         on courseSubject.id equals studentCourseSubject.course_subject_id
+        //                                 join studentCourseSubject in models.tbl_student_course_subject
+        //                                 on courseSubject.id equals studentCourseSubject.course_subject_id
 
-                                         join student in models.tbl_student
-                                         on studentCourseSubject.student_id equals student.id
+        //                                 join student in models.tbl_student
+        //                                 on studentCourseSubject.student_id equals student.id
 
-                                         join studentSubjectMark in models.tbl_student_subject_mark
-                                         on student.id equals studentSubjectMark.student_id
+        //                                 join studentSubjectMark in models.tbl_student_subject_mark
+        //                                 on student.id equals studentSubjectMark.student_id
 
-                                         join person in models.tbl_person
-                                         on student.id equals person.id
+        //                                 join person in models.tbl_person
+        //                                 on student.id equals person.id
 
 
-                                         join enrollmentClass in models.tbl_enrollment_class
-                                         on student.class_id equals enrollmentClass.id
+        //                                 join enrollmentClass in models.tbl_enrollment_class
+        //                                 on student.class_id equals enrollmentClass.id
 
-                                         join department in models.tbl_department
-                                         on enrollmentClass.department_id equals department.id
+        //                                 join department in models.tbl_department
+        //                                 on enrollmentClass.department_id equals department.id
 
-                                         join long numcheckedList in iDCheckeds
-                                         on enrollmentClass.id equals numcheckedList
+        //                                 join long numcheckedList in iDCheckeds
+        //                                 on enrollmentClass.id equals numcheckedList
 
-                                         where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
-                                         && subject.id == subjectID
-                                         && studentSubjectMark.subject_id == subjectID
-                                         && studentSubjectMark.semester_id == semeter.id
+        //                                 where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
+        //                                 && subject.id == subjectID
+        //                                 && studentSubjectMark.subject_id == subjectID
+        //                                 && studentSubjectMark.semester_id == semeter.id
 
-                                         select new
-                                         {
-                                             studentID = student.id,
-                                             studentName = person.display_name,
-                                             studentCode = student.student_code,
-                                             mark = studentSubjectMark.mark,
-                                             courseSubjectID = courseSubject.id,
-                                             courseSubjectName = courseSubject.display_name,
-                                             teacherID = courseSubject.teacher_id,
-                                             enrollmentClassID = enrollmentClass.id,
-                                             enrollmentClassName = enrollmentClass.className,
-                                             departmentID = department.id,
-                                             departmentName = department.name
+        //                                 select new
+        //                                 {
+        //                                     studentID = student.id,
+        //                                     studentName = person.display_name,
+        //                                     studentCode = student.student_code,
+        //                                     mark = studentSubjectMark.mark,
+        //                                     courseSubjectID = courseSubject.id,
+        //                                     courseSubjectName = courseSubject.display_name,
+        //                                     teacherID = courseSubject.teacher_id,
+        //                                     enrollmentClassID = enrollmentClass.id,
+        //                                     enrollmentClassName = enrollmentClass.className,
+        //                                     departmentID = department.id,
+        //                                     departmentName = department.name
 
-                                         }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
-                                         x.studentCode, x.mark, x.courseSubjectID,
-                                         x.courseSubjectName, x.teacherID,
-                                         x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
+        //                                 }).ToList().Select(x => new StudentMarkViewModel(x.studentID, x.studentName,
+        //                                 x.studentCode, x.mark, x.courseSubjectID,
+        //                                 x.courseSubjectName, x.teacherID,
+        //                                 x.enrollmentClassID, x.enrollmentClassName, x.departmentID, x.departmentName
 
-                                         )).ToList();
+        //                                 )).ToList();
 
-            return studentMarkViewModels;
-        }
+        //    return studentMarkViewModels;
+        //}
 
-        //Lấy điểm sinh viên theo một phòng ban
-        public List<MarkByDepartment> getMarksByDepartMent(long? subjectID, long? startYear, long? endYear, long? subject_exam_type_id,long? departmentID)
-        {
+        ////Lấy điểm sinh viên theo một phòng ban
+        //public List<MarkByDepartment> getMarksByDepartMent(long? subjectID, long? startYear, long? endYear, long? subject_exam_type_id,long? departmentID)
+        //{
             
-            var listStudent = (from schoolYear in models.tbl_shool_year
-                                join enrollmentClass in models.tbl_enrollment_class
-                                on schoolYear.year equals enrollmentClass.schoolYear
+        //    var listStudent = (from schoolYear in models.tbl_shool_year
+        //                        join enrollmentClass in models.tbl_enrollment_class
+        //                        on schoolYear.year equals enrollmentClass.schoolYear
 
-                                join student in models.tbl_student
-                                on enrollmentClass.id equals student.class_id
+        //                        join student in models.tbl_student
+        //                        on enrollmentClass.id equals student.class_id
 
-                                join studentMark in models.tbl_student_mark
-                                on student.id equals studentMark.student_id
+        //                        join studentMark in models.tbl_student_mark
+        //                        on student.id equals studentMark.student_id
 
-                                join subject in models.tbl_subject
-                                on studentMark.subject_id equals subject.id
+        //                        join subject in models.tbl_subject
+        //                        on studentMark.subject_id equals subject.id
 
-                                join subjectExam in models.tbl_subject_exam
-                                on studentMark.subject_exam_id equals subjectExam.id
+        //                        join subjectExam in models.tbl_subject_exam
+        //                        on studentMark.subject_exam_id equals subjectExam.id
 
-                                join department in models.tbl_department
-                                on enrollmentClass.department_id equals department.id
+        //                        join department in models.tbl_department
+        //                        on enrollmentClass.department_id equals department.id
 
-                                where schoolYear.id >= startYear && schoolYear.id <= endYear
-                                && subject.id == subjectID
-                                && subjectExam.subject_exam_type_id == subject_exam_type_id
-                                && department.id == departmentID
-                                select new
-                                {
-                                    enrollmentClassID = enrollmentClass.id,
-                                    enrollmentClassName = enrollmentClass.className,
-                                    departmentID = department.id,
-                                    departmentName = department.name,
-                                    subjectID = subject.id,
-                                    subjectName = subject.subject_name,
-                                    year = schoolYear.year,
-                                    mark = studentMark.mark
-                                }).ToList();
+        //                        where schoolYear.id >= startYear && schoolYear.id <= endYear
+        //                        && subject.id == subjectID
+        //                        && subjectExam.subject_exam_type_id == subject_exam_type_id
+        //                        && department.id == departmentID
+        //                        select new
+        //                        {
+        //                            enrollmentClassID = enrollmentClass.id,
+        //                            enrollmentClassName = enrollmentClass.className,
+        //                            departmentID = department.id,
+        //                            departmentName = department.name,
+        //                            subjectID = subject.id,
+        //                            subjectName = subject.subject_name,
+        //                            year = schoolYear.year,
+        //                            mark = studentMark.mark
+        //                        }).ToList();
             
-            var result = (from list in listStudent
-                          group list by list.year into listGroup
-                          from sublist in listStudent
-                          where listGroup.Key == sublist.year
-                          select new
-                          {
-                              departmentID = sublist.departmentID,
-                              departmentName = sublist.departmentName,
-                              subjectID = sublist.subjectID,
-                              subjectName = sublist.subjectName,
-                              year = listGroup.Key,
-                              Tong = listGroup.Count(),
-                              A = listGroup.Count(x => x.mark >= 8.45 && x.mark <= 10),
-                              B = listGroup.Count(x => x.mark >= 6.95 && x.mark < 8.45),
-                              C = listGroup.Count(x => x.mark >= 5.45 && x.mark < 6.95),
-                              D = listGroup.Count(x => x.mark >= 3.95 && x.mark < 5.45),
-                              F = listGroup.Count(x => x.mark >= 0 && x.mark < 3.95)
+        //    var result = (from list in listStudent
+        //                  group list by list.year into listGroup
+        //                  from sublist in listStudent
+        //                  where listGroup.Key == sublist.year
+        //                  select new
+        //                  {
+        //                      departmentID = sublist.departmentID,
+        //                      departmentName = sublist.departmentName,
+        //                      subjectID = sublist.subjectID,
+        //                      subjectName = sublist.subjectName,
+        //                      year = listGroup.Key,
+        //                      Tong = listGroup.Count(),
+        //                      A = listGroup.Count(x => x.mark >= 8.45 && x.mark <= 10),
+        //                      B = listGroup.Count(x => x.mark >= 6.95 && x.mark < 8.45),
+        //                      C = listGroup.Count(x => x.mark >= 5.45 && x.mark < 6.95),
+        //                      D = listGroup.Count(x => x.mark >= 3.95 && x.mark < 5.45),
+        //                      F = listGroup.Count(x => x.mark >= 0 && x.mark < 3.95)
 
-                          }
-                          ).Distinct().ToList().Select(x => new MarkByDepartment(0, x.subjectID, x.subjectName, x.departmentID, x.departmentName,
-                              x.year,
-                              x.Tong,
-                              x.A,
-                              Math.Round((double)x.A * 100 / x.Tong, 2),
-                              x.B,
-                              Math.Round((double)x.B * 100 / x.Tong, 2),
-                              x.C,
-                              Math.Round((double)x.C * 100 / x.Tong, 2),
-                              x.D,
-                              Math.Round((double)x.D * 100 / x.Tong, 2),
-                              x.F,
-                              Math.Round((double)x.F * 100 / x.Tong, 2)
+        //                  }
+        //                  ).Distinct().ToList().Select(x => new MarkByDepartment(0, x.subjectID, x.subjectName, x.departmentID, x.departmentName,
+        //                      x.year,
+        //                      x.Tong,
+        //                      x.A,
+        //                      Math.Round((double)x.A * 100 / x.Tong, 2),
+        //                      x.B,
+        //                      Math.Round((double)x.B * 100 / x.Tong, 2),
+        //                      x.C,
+        //                      Math.Round((double)x.C * 100 / x.Tong, 2),
+        //                      x.D,
+        //                      Math.Round((double)x.D * 100 / x.Tong, 2),
+        //                      x.F,
+        //                      Math.Round((double)x.F * 100 / x.Tong, 2)
 
-                          )).ToList();
+        //                  )).ToList();
 
-            int i = 1;
-            foreach (MarkByDepartment item in result)
-            {
-                item.stt = i++;
-            }
-            return result;
-        }
-        public List<MarkByDepartment> getStudentMarksByDepartMent(long? subjectID, long? startYear, long? endYear, long? departmentID)
-        {
+        //    int i = 1;
+        //    foreach (MarkByDepartment item in result)
+        //    {
+        //        item.stt = i++;
+        //    }
+        //    return result;
+        //}
+        //public List<MarkByDepartment> getStudentMarksByDepartMent(long? subjectID, long? startYear, long? endYear, long? departmentID)
+        //{
 
-            var listStudent = (from schoolYear in models.tbl_shool_year
-                               join enrollmentClass in models.tbl_enrollment_class
-                               on schoolYear.year equals enrollmentClass.schoolYear
+        //    var listStudent = (from schoolYear in models.tbl_shool_year
+        //                       join enrollmentClass in models.tbl_enrollment_class
+        //                       on schoolYear.year equals enrollmentClass.schoolYear
 
-                               join student in models.tbl_student
-                               on enrollmentClass.id equals student.class_id
+        //                       join student in models.tbl_student
+        //                       on enrollmentClass.id equals student.class_id
 
-                               join studentSubjectMark in models.tbl_student_subject_mark
-                               on student.id equals studentSubjectMark.student_id
+        //                       join studentSubjectMark in models.tbl_student_subject_mark
+        //                       on student.id equals studentSubjectMark.student_id
 
-                               join subject in models.tbl_subject
-                               on studentSubjectMark.subject_id equals subject.id
+        //                       join subject in models.tbl_subject
+        //                       on studentSubjectMark.subject_id equals subject.id
 
-                               join department in models.tbl_department
-                               on enrollmentClass.department_id equals department.id
+        //                       join department in models.tbl_department
+        //                       on enrollmentClass.department_id equals department.id
 
-                               where schoolYear.id >= startYear && schoolYear.id <= endYear
-                               && subject.id == subjectID
-                               && department.id == departmentID
-                               select new
-                               {
-                                   enrollmentClassID = enrollmentClass.id,
-                                   enrollmentClassName = enrollmentClass.className,
-                                   departmentID = department.id,
-                                   departmentName = department.name,
-                                   subjectID = subject.id,
-                                   subjectName = subject.subject_name,
-                                   mark = studentSubjectMark.mark,
-                                   year = schoolYear.year
-                               }).ToList();
+        //                       where schoolYear.id >= startYear && schoolYear.id <= endYear
+        //                       && subject.id == subjectID
+        //                       && department.id == departmentID
+        //                       select new
+        //                       {
+        //                           enrollmentClassID = enrollmentClass.id,
+        //                           enrollmentClassName = enrollmentClass.className,
+        //                           departmentID = department.id,
+        //                           departmentName = department.name,
+        //                           subjectID = subject.id,
+        //                           subjectName = subject.subject_name,
+        //                           mark = studentSubjectMark.mark,
+        //                           year = schoolYear.year
+        //                       }).ToList();
 
-            var result = (from list in listStudent
-                          group list by list.year into listGroup
-                          from sublist in listStudent
-                          where listGroup.Key == sublist.year
-                          select new
-                          {
-                              departmentID = sublist.departmentID,
-                              departmentName = sublist.departmentName,
-                              subjectID = sublist.subjectID,
-                              subjectName = sublist.subjectName,
-                              year = listGroup.Key,
-                              Tong = listGroup.Count(),
-                              A = listGroup.Count(x => x.mark >= 8.45 && x.mark <= 10),
-                              B = listGroup.Count(x => x.mark >= 6.95 && x.mark < 8.45),
-                              C = listGroup.Count(x => x.mark >= 5.45 && x.mark < 6.95),
-                              D = listGroup.Count(x => x.mark >= 3.95 && x.mark < 5.45),
-                              F = listGroup.Count(x => x.mark >= 0 && x.mark < 3.95)
+        //    var result = (from list in listStudent
+        //                  group list by list.year into listGroup
+        //                  from sublist in listStudent
+        //                  where listGroup.Key == sublist.year
+        //                  select new
+        //                  {
+        //                      departmentID = sublist.departmentID,
+        //                      departmentName = sublist.departmentName,
+        //                      subjectID = sublist.subjectID,
+        //                      subjectName = sublist.subjectName,
+        //                      year = listGroup.Key,
+        //                      Tong = listGroup.Count(),
+        //                      A = listGroup.Count(x => x.mark >= 8.45 && x.mark <= 10),
+        //                      B = listGroup.Count(x => x.mark >= 6.95 && x.mark < 8.45),
+        //                      C = listGroup.Count(x => x.mark >= 5.45 && x.mark < 6.95),
+        //                      D = listGroup.Count(x => x.mark >= 3.95 && x.mark < 5.45),
+        //                      F = listGroup.Count(x => x.mark >= 0 && x.mark < 3.95)
 
-                          }
-                          ).Distinct().ToList().Select(x => new MarkByDepartment(0, x.subjectID, x.subjectName, x.departmentID, x.departmentName,
-                              x.year,
-                              x.Tong,
-                              x.A,
-                              Math.Round((double)x.A * 100 / x.Tong, 2),
-                              x.B,
-                              Math.Round((double)x.B * 100 / x.Tong, 2),
-                              x.C,
-                              Math.Round((double)x.C * 100 / x.Tong, 2),
-                              x.D,
-                              Math.Round((double)x.D * 100 / x.Tong, 2),
-                              x.F,
-                              Math.Round((double)x.F * 100 / x.Tong, 2)
+        //                  }
+        //                  ).Distinct().ToList().Select(x => new MarkByDepartment(0, x.subjectID, x.subjectName, x.departmentID, x.departmentName,
+        //                      x.year,
+        //                      x.Tong,
+        //                      x.A,
+        //                      Math.Round((double)x.A * 100 / x.Tong, 2),
+        //                      x.B,
+        //                      Math.Round((double)x.B * 100 / x.Tong, 2),
+        //                      x.C,
+        //                      Math.Round((double)x.C * 100 / x.Tong, 2),
+        //                      x.D,
+        //                      Math.Round((double)x.D * 100 / x.Tong, 2),
+        //                      x.F,
+        //                      Math.Round((double)x.F * 100 / x.Tong, 2)
 
-                          )).ToList();
+        //                  )).ToList();
 
-            int i = 1;
-            foreach (MarkByDepartment item in result)
-            {
-                item.stt = i++;
-            }
-            return result;
-        }
-        // Lấy điểm tổng kết của sinh viên theo phòng ban
-        public List<MarkByDepartment> getMarksByDepartMent(long? subject_id, long? school_year_id_start, long? school_year_id_end)
-        {
-            var listStudent = (from schoolYear in models.tbl_shool_year
-                               join enrollmentClass in models.tbl_enrollment_class
-                               on schoolYear.year equals enrollmentClass.schoolYear
+        //    int i = 1;
+        //    foreach (MarkByDepartment item in result)
+        //    {
+        //        item.stt = i++;
+        //    }
+        //    return result;
+        //}
+        //// Lấy điểm tổng kết của sinh viên theo phòng ban
+        //public List<MarkByDepartment> getMarksByDepartMent(long? subject_id, long? school_year_id_start, long? school_year_id_end)
+        //{
+        //    var listStudent = (from schoolYear in models.tbl_shool_year
+        //                       join enrollmentClass in models.tbl_enrollment_class
+        //                       on schoolYear.year equals enrollmentClass.schoolYear
 
-                               join student in models.tbl_student
-                               on enrollmentClass.id equals student.class_id
+        //                       join student in models.tbl_student
+        //                       on enrollmentClass.id equals student.class_id
 
-                               join studentSubjectMark in models.tbl_student_subject_mark
-                               on student.id equals studentSubjectMark.student_id
+        //                       join studentSubjectMark in models.tbl_student_subject_mark
+        //                       on student.id equals studentSubjectMark.student_id
 
-                               join subject in models.tbl_subject
-                               on studentSubjectMark.subject_id equals subject.id
+        //                       join subject in models.tbl_subject
+        //                       on studentSubjectMark.subject_id equals subject.id
 
-                               join department in models.tbl_department
-                               on enrollmentClass.department_id equals department.id
+        //                       join department in models.tbl_department
+        //                       on enrollmentClass.department_id equals department.id
 
-                               where schoolYear.id >= school_year_id_start && schoolYear.id <= school_year_id_end
-                               && subject.id == subject_id
-                               && department.level == 1
-                               && (department.department_type == 2 || department.department_type == 0)
-                               select new
-                               {
-                                   enrollmentClassID = enrollmentClass.id,
-                                   enrollmentClassName = enrollmentClass.className,
-                                   departmentID = department.id,
-                                   departmentName = department.name,
-                                   subjectID = subject.id,
-                                   subjectName = subject.subject_name,
-                                   mark = studentSubjectMark.mark
-                               }).ToList();
-            var result = (from list in listStudent
-                          group list by list.departmentID into listGroup
-                          from sublist in listStudent
-                          where listGroup.Key == sublist.departmentID
-                          select new
-                          {
-                              departmentID = listGroup.Key,
-                              departmentName = sublist.departmentName,
-                              subjectID = sublist.subjectID,
-                              subjectName = sublist.subjectName,
-                              Tong = listGroup.Count(),
-                              A = listGroup.Count(x => x.mark >= 8.45 && x.mark <= 10),
-                              B = listGroup.Count(x => x.mark >= 6.95 && x.mark < 8.45),
-                              C = listGroup.Count(x => x.mark >= 5.45 && x.mark < 6.95),
-                              D = listGroup.Count(x => x.mark >= 3.95 && x.mark < 5.45),
-                              F = listGroup.Count(x => x.mark >= 0 && x.mark < 3.95)
+        //                       where schoolYear.id >= school_year_id_start && schoolYear.id <= school_year_id_end
+        //                       && subject.id == subject_id
+        //                       && department.level == 1
+        //                       && (department.department_type == 2 || department.department_type == 0)
+        //                       select new
+        //                       {
+        //                           enrollmentClassID = enrollmentClass.id,
+        //                           enrollmentClassName = enrollmentClass.className,
+        //                           departmentID = department.id,
+        //                           departmentName = department.name,
+        //                           subjectID = subject.id,
+        //                           subjectName = subject.subject_name,
+        //                           mark = studentSubjectMark.mark
+        //                       }).ToList();
+        //    var result = (from list in listStudent
+        //                  group list by list.departmentID into listGroup
+        //                  from sublist in listStudent
+        //                  where listGroup.Key == sublist.departmentID
+        //                  select new
+        //                  {
+        //                      departmentID = listGroup.Key,
+        //                      departmentName = sublist.departmentName,
+        //                      subjectID = sublist.subjectID,
+        //                      subjectName = sublist.subjectName,
+        //                      Tong = listGroup.Count(),
+        //                      A = listGroup.Count(x => x.mark >= 8.45 && x.mark <= 10),
+        //                      B = listGroup.Count(x => x.mark >= 6.95 && x.mark < 8.45),
+        //                      C = listGroup.Count(x => x.mark >= 5.45 && x.mark < 6.95),
+        //                      D = listGroup.Count(x => x.mark >= 3.95 && x.mark < 5.45),
+        //                      F = listGroup.Count(x => x.mark >= 0 && x.mark < 3.95)
 
-                          }
-                          ).Distinct().ToList().Select(x => new MarkByDepartment(0, x.subjectID, x.subjectName, x.departmentID,
-                              x.departmentName,
-                              school_year_id_start,
-                              school_year_id_end,
-                              x.Tong,
-                              x.A,
-                              Math.Round((double)x.A * 100 / x.Tong, 2),
-                              x.B,
-                              Math.Round((double)x.B * 100 / x.Tong, 2),
-                              x.C,
-                              Math.Round((double)x.C * 100 / x.Tong, 2),
-                              x.D,
-                              Math.Round((double)x.D * 100 / x.Tong, 2),
-                              x.F,
-                              Math.Round((double)x.F * 100 / x.Tong, 2)
+        //                  }
+        //                  ).Distinct().ToList().Select(x => new MarkByDepartment(0, x.subjectID, x.subjectName, x.departmentID,
+        //                      x.departmentName,
+        //                      school_year_id_start,
+        //                      school_year_id_end,
+        //                      x.Tong,
+        //                      x.A,
+        //                      Math.Round((double)x.A * 100 / x.Tong, 2),
+        //                      x.B,
+        //                      Math.Round((double)x.B * 100 / x.Tong, 2),
+        //                      x.C,
+        //                      Math.Round((double)x.C * 100 / x.Tong, 2),
+        //                      x.D,
+        //                      Math.Round((double)x.D * 100 / x.Tong, 2),
+        //                      x.F,
+        //                      Math.Round((double)x.F * 100 / x.Tong, 2)
 
-                          )).ToList();
-            int i = 1;
-            foreach (MarkByDepartment item in result)
-            {
-                item.stt = i++;
-            }
-            return result;
-        }
+        //                  )).ToList();
+        //    int i = 1;
+        //    foreach (MarkByDepartment item in result)
+        //    {
+        //        item.stt = i++;
+        //    }
+        //    return result;
+        //}
 
         public List<MarkByDepartment> getMarkByDepartment(List<StudentMarkViewModel> studentMarkViewModels)
         {
             var result = (from s in studentMarkViewModels
-                          group s by new { s.departmentID, s.departmentName } into list
-                          
+                          group s by new { s.departmentID, s.departmentName,
+                          s.semesterId,s.semesterName,s.enrollmentClassID,s.enrollmentClassName} into list
+                          orderby list.Key.departmentID
+                          select new
+                          {
+                              departmentID = list.Key.departmentID,
+                              departmentName = list.Key.departmentName,
+                              semesterId = list.Key.semesterId,
+                              semtesterName = list.Key.semesterName,
+                              enrollmentClassID = list.Key.enrollmentClassID,
+                              enrollmentClassName = list.Key.enrollmentClassName,
+                              Tong = list.Count(),
+                              A = list.Count(x => x.mark >= 8.45 && x.mark <= 10),
+                              B = list.Count(x => x.mark >= 6.95 && x.mark < 8.45),
+                              C = list.Count(x => x.mark >= 5.45 && x.mark < 6.95),
+                              D = list.Count(x => x.mark >= 3.95 && x.mark < 5.45),
+                              F = list.Count(x => x.mark >= 0 && x.mark < 3.95)
+
+                          }).ToList().Select(x => new MarkByDepartment(0,x.departmentID,x.departmentName,
+                                x.semesterId,x.semtesterName,x.enrollmentClassID,x.enrollmentClassName,
+                              x.Tong,
+                              x.A,
+                              Math.Round((double)x.A * 100 / x.Tong, 2),
+                              x.B,
+                              Math.Round((double)x.B * 100 / x.Tong, 2),
+                              x.C,
+                              Math.Round((double)x.C * 100 / x.Tong, 2),
+                              x.D,
+                              Math.Round((double)x.D * 100 / x.Tong, 2),
+                              x.F,
+                              Math.Round((double)x.F * 100 / x.Tong, 2)
+                              )).ToList();
+            int i = 1;
+            foreach (MarkByDepartment item in result)
+            {
+                item.stt = i++;
+            }
+            return result;
+        }
+        public List<MarkByDepartment> getDataChartByDepartment(List<StudentMarkViewModel> studentMarkViewModels)
+        {
+            var result = (from s in studentMarkViewModels
+                          group s by new
+                          {
+                              s.departmentID,
+                              s.departmentName,
+                          } into list
+                          orderby list.Key.departmentID
                           select new
                           {
                               departmentID = list.Key.departmentID,
@@ -1554,7 +1705,8 @@ namespace PhoDiem_TLU.DatabaseIO
                               D = list.Count(x => x.mark >= 3.95 && x.mark < 5.45),
                               F = list.Count(x => x.mark >= 0 && x.mark < 3.95)
 
-                          }).ToList().Select(x => new MarkByDepartment(0,x.departmentID,x.departmentName,x.Tong,
+                          }).ToList().Select(x => new MarkByDepartment(0, x.departmentID, x.departmentName,
+                              x.Tong,
                               x.A,
                               Math.Round((double)x.A * 100 / x.Tong, 2),
                               x.B,
@@ -2025,7 +2177,55 @@ namespace PhoDiem_TLU.DatabaseIO
         {
 
             var result = (from s in studentMarkViewModels
-                          group s by new { s.teacherID, s.teacherName } into list
+                          group s by new { s.teacherID, s.teacherName,s.semesterId,s.semesterName,
+                          s.courseSubjectID,s.courseSubjectName} into list
+                          orderby list.Key.teacherID
+                          select new
+                          {
+                              teacherID = list.Key.teacherID,
+                              teacherName = list.Key.teacherName,
+                              semesterId = list.Key.semesterId,
+                              semesterName = list.Key.semesterName,
+                              courseSubjectID = list.Key.courseSubjectID,
+                              courseSubjectName = list.Key.courseSubjectName,
+                              Tong = list.Count(),
+                              A = list.Count(x => x.mark >= 8.45 && x.mark <= 10),
+                              B = list.Count(x => x.mark >= 6.95 && x.mark < 8.45),
+                              C = list.Count(x => x.mark >= 5.45 && x.mark < 6.95),
+                              D = list.Count(x => x.mark >= 3.95 && x.mark < 5.45),
+                              F = list.Count(x => x.mark >= 0 && x.mark < 3.95)
+
+                          }).ToList().Select(x => new MarkRate(0,x.teacherID, x.teacherName,
+                              x.semesterId,x.semesterName,x.courseSubjectID,x.courseSubjectName,
+                              x.Tong,
+                              x.A,
+                              Math.Round((double)x.A * 100 / x.Tong, 2),
+                              x.B,
+                              Math.Round((double)x.B * 100 / x.Tong, 2),
+                              x.C,
+                              Math.Round((double)x.C * 100 / x.Tong, 2),
+                              x.D,
+                              Math.Round((double)x.D * 100 / x.Tong, 2),
+                              x.F,
+                              Math.Round((double)x.F * 100 / x.Tong, 2)
+                              )).ToList();
+            int i = 1;
+            foreach (MarkRate item in result)
+            {
+                item.stt = i++;
+            }
+            return result;
+        }
+        public List<MarkRate> getDataChartByTeacher(List<StudentMarkViewModel> studentMarkViewModels)
+        {
+
+            var result = (from s in studentMarkViewModels
+                          group s by new
+                          {
+                              s.teacherID,
+                              s.teacherName,
+                          } into list
+                          orderby list.Key.teacherID
                           select new
                           {
                               teacherID = list.Key.teacherID,
@@ -2037,7 +2237,8 @@ namespace PhoDiem_TLU.DatabaseIO
                               D = list.Count(x => x.mark >= 3.95 && x.mark < 5.45),
                               F = list.Count(x => x.mark >= 0 && x.mark < 3.95)
 
-                          }).ToList().Select(x => new MarkRate(0,x.teacherID, x.teacherName, x.Tong,
+                          }).ToList().Select(x => new MarkRate(0, x.teacherID, x.teacherName,
+                              x.Tong,
                               x.A,
                               Math.Round((double)x.A * 100 / x.Tong, 2),
                               x.B,

@@ -29,7 +29,33 @@ namespace PhoDiem_TLU.ViewModels
             this.rateF = rateF;
             this.numberOfCredit = numberOfCredit;
         }
-        public MarkRate(long stt, long? teacherID,string teacherName, long sum, long a, double rateA, long b, double rateB, long c, double rateC, long d, double rateD, long f, double rateF)
+        public MarkRate(long stt, long? teacherID,string teacherName,
+            long?semesterId,string semesterName,long? courseSubjectId,string courseSubjectName,
+            long sum, long a, double rateA, long b, double rateB, long c, double rateC, long d,
+            double rateD, long f, double rateF)
+        {
+            this.stt = stt;
+            this.teacherID = teacherID;
+            this.teacherName = teacherName;
+            this.courseSubjectName = courseSubjectName;
+            this.semesterId = semesterId;
+            this.semesterName = semesterName;
+            this.courseSubjectId = courseSubjectId;
+            this.sum = sum;
+            A = a;
+            this.rateA = rateA;
+            B = b;
+            this.rateB = rateB;
+            C = c;
+            this.rateC = rateC;
+            D = d;
+            this.rateD = rateD;
+            F = f;
+            this.rateF = rateF;
+        }
+        public MarkRate(long stt, long? teacherID, string teacherName,
+            long sum, long a, double rateA, long b, double rateB, long c, double rateC, long d,
+            double rateD, long f, double rateF)
         {
             this.stt = stt;
             this.teacherID = teacherID;
@@ -112,9 +138,12 @@ namespace PhoDiem_TLU.ViewModels
         public long? subjectID { get; set; }
         public string subjectName { get; set; }
         public long? year { get; set; }
+        public long? courseSubjectId { get; set; }
         public string courseSubjectName { get; set; }
         public long? teacherID { get; set; }    
         public string teacherName { set; get; }
+        public long? semesterId { get; set; }
+        public string semesterName { get; set; }
         public long? startYearID { get; set; }
         public long? endYearID { get; set; }
         public long sum { set; get; }

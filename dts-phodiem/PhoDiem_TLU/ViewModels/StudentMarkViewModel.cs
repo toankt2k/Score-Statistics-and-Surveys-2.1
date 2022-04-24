@@ -9,7 +9,7 @@ namespace PhoDiem_TLU.ViewModels
     {
         public StudentMarkViewModel(long? studentID, string studentName, string studentcode, double? mark, long? courseSubjectID,
             string courseSubjectName, long? teacherID, long? enrollmentClassID, string enrollmentClassName, long? departmentID,
-            string departmentName)
+            string departmentName,long? semesterId, string semesterName)
         {
             this.studentID = studentID;
             this.studentName = studentName;
@@ -22,10 +22,11 @@ namespace PhoDiem_TLU.ViewModels
             this.enrollmentClassName = enrollmentClassName;
             this.departmentID = departmentID;
             this.departmentName = departmentName;
+            this.semesterId = semesterId;
+            this.semesterName = semesterName;
         }
         public StudentMarkViewModel(long? studentID, string studentName, string studentcode, double? mark, long? courseSubjectID,
-            string courseSubjectName, long? teacherID,string teacherName, long? enrollmentClassID, string enrollmentClassName, long? departmentID,
-            string departmentName)
+            string courseSubjectName, long? teacherID,string teacherName, long? enrollmentClassID, string enrollmentClassName,long? semesterId,string semesterName)
         {
             this.studentID = studentID;
             this.studentName = studentName;
@@ -37,8 +38,9 @@ namespace PhoDiem_TLU.ViewModels
             this.teacherName = teacherName;
             this.enrollmentClassID = enrollmentClassID;
             this.enrollmentClassName = enrollmentClassName;
-            this.departmentID = departmentID;
-            this.departmentName = departmentName;
+            this.semesterId = semesterId;
+            this.semesterName = semesterName;
+
         }
         public StudentMarkViewModel(long? studentID, string studentcode, double? mark, long? courseSubjectID,
             string courseSubjectName, long? teacherID,string teacherName, long? enrollmentClassID, string enrollmentClassName, long? departmentID,
@@ -56,6 +58,24 @@ namespace PhoDiem_TLU.ViewModels
             this.departmentID = departmentID;
             this.departmentName = departmentName;
         }
+        public StudentMarkViewModel(long? studentID, string studentcode, double? mark, long? courseSubjectID,
+            string courseSubjectName, long? teacherID, string teacherName, long? enrollmentClassID, string enrollmentClassName, long? departmentID,
+            string departmentName,long? semesterId,string semesterName)
+        {
+            this.studentID = studentID;
+            this.studentcode = studentcode;
+            this.mark = mark;
+            this.courseSubjectID = courseSubjectID;
+            this.courseSubjectName = courseSubjectName;
+            this.teacherID = teacherID;
+            this.teacherName = teacherName;
+            this.enrollmentClassID = enrollmentClassID;
+            this.enrollmentClassName = enrollmentClassName;
+            this.departmentID = departmentID;
+            this.departmentName = departmentName;
+            this.semesterId = semesterId;
+            this.semesterName = semesterName;
+        }
 
         public long? studentID { get; set; }
         public string studentName { get; set; }
@@ -69,5 +89,7 @@ namespace PhoDiem_TLU.ViewModels
         public string enrollmentClassName { get; set; }
         public long? departmentID { get; set; }
         public string departmentName { get; set; }
+        public long? semesterId { get; set; }
+        public string semesterName { get; set; }
     }
 }

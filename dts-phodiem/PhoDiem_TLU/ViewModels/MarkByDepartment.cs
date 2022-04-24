@@ -31,6 +31,24 @@ namespace PhoDiem_TLU.ViewModels
             this.F = F;
             this.rateF = rateF;
         }
+        public MarkByDepartment(long stt, long? departmentID, string departmentName,
+            long sum, long A, double rateA, long B, double rateB, long C, double rateC, long D, double rateD,
+            long F, double rateF)
+        {
+            this.stt = stt;
+            this.departmentID = departmentID;
+            this.departmentName = departmentName;
+            this.A = A;
+            this.rateA = rateA;
+            this.B = B;
+            this.rateB = rateB;
+            this.C = C;
+            this.rateC = rateC;
+            this.D = D;
+            this.rateD = rateD;
+            this.F = F;
+            this.rateF = rateF;
+        }
         public MarkByDepartment(long stt, long? subjectID, string subjectName, long? departmentID, string departmentName,
             long? year,
             long sum, long A, double rateA, long B, double rateB, long C, double rateC, long D, double rateD,
@@ -54,12 +72,18 @@ namespace PhoDiem_TLU.ViewModels
             this.F = F;
             this.rateF = rateF;
         }
-        public MarkByDepartment(long stt,long?departmentID, string departmentName, long sum, long A, double rateA, long B, double rateB, long C, double rateC, long D, double rateD,
+        public MarkByDepartment(long stt,long?departmentID, string departmentName,long? semesterId,
+            string semesterName,long? enrollmentClassID,string enrollmentClassName,
+            long sum, long A, double rateA, long B, double rateB, long C, double rateC, long D, double rateD,
             long F, double rateF)
         {
             this.stt = stt;
             this.departmentID = departmentID;   
             this.departmentName = departmentName;
+            this.semesterId = semesterId;
+            this.semesterName = semesterName;
+            this.enrollmentClassID = enrollmentClassID;
+            this.enrollmentClassName = enrollmentClassName;
             this.sum = sum;
             this.A = A;
             this.rateA = rateA;
@@ -74,5 +98,8 @@ namespace PhoDiem_TLU.ViewModels
         }
         public long? departmentID { get; set; }
         public string departmentName { get; set; }
+        public long? enrollmentClassID { get; set; }
+        public string enrollmentClassName { get; set; }
+        
     }
 }

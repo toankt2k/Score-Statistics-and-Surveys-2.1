@@ -81,7 +81,7 @@ function handlefilter() {
                     Marks.setData(response.dataTable)
                     Selected.setData(response.subjectID, response.semesterIDStart, response.semesterIDEnd, response.showoption, response.markOption);
                     
-                    fillDataToChart(response.dataTable, response.showoption);
+                    fillDataToChart(response.dataChart, response.showoption);
                     fillDataToChartPie(response.sumMark);
                     ok = true;
                     showHandler(response.showoption, response.markOption)
@@ -106,14 +106,17 @@ function showHandler(showOption, markOption) {
     if (true) {
         
         if (showOption === "HTK") {
+            
             var marks = Marks.getAllData()
+            console.log(marks)
             var data = marks.map(dataItem => {
-                var { stt, departmentID, departmentName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = dataItem
+                var { stt, departmentID, departmentName, semesterId, semesterName, enrollmentClassID, enrollmentClassName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = dataItem
                 return {
-                    
-                    stt, departmentName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
+
+                    stt, departmentName, semesterName, enrollmentClassName,sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
                     'checkbox': `
-                                  <input class="form-check-input" type="checkbox" name="checkboxExport[]" value="${departmentID}">
+                                  <input class="form-check-input" type="checkbox" name="checkboxExport[]" departmentValue="${departmentID}"
+                                    semesterValue=${semesterId} enrollmentClassValue=${enrollmentClassID}>
                                   
                                 `,
                 }
@@ -130,14 +133,16 @@ function showHandler(showOption, markOption) {
         }
         else if (showOption === "HTGV") {
             var marks = Marks.getAllData()
+            console.log(marks)
             var data = marks.map(data => {
-                var { stt, teacherID, teacherName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = data
+                var { stt, teacherID, teacherName, semesterId, semesterName, courseSubjectId, courseSubjectName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF } = data
                 return {
-                    stt, teacherName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
+                    stt, teacherName, semesterName, courseSubjectName, sum, A, rateA, B, rateB, C, rateC, D, rateD, F, rateF,
                     'checkbox': `
-                                  <input class="form-check-input" type="checkbox" name="checkboxExport[]" value="${teacherID}">
-                                  
-                                `,
+                        <input class="form-check-input" type="checkbox" name="checkboxExport[]" teacherValue="${teacherID}" 
+                        semesterValue="${semesterId}" courseSubjectValue= "${courseSubjectId}" ">
+                                 
+                    `,
                 }
             })
 
@@ -184,9 +189,18 @@ function handlerExport() {
         var { subjectID, semesterIDStart, semesterIDEnd, showOption, markOption, } = selected
         var checkboxIDs = []
         $('input[name="checkboxExport[]"]:checked').each(function () {
+            
             checkboxIDs.push(
-                parseInt($(this).val())
+                {
+                    departmentId: parseInt($(this).attr('departmentValue')),
+                    semesterId: parseInt($(this).attr('semesterValue')),
+                    enrollmentClassId: parseInt($(this).attr('enrollmentClassValue')),
+                    teacherId: parseInt($(this).attr('teacherValue')),
+                    courseSubjectId: parseInt($(this).attr('courseSubjectValue')),
+
+                }
             )
+            
         });
         console.log(subjectID, semesterIDStart, semesterIDEnd, showOption, markOption,checkboxIDs);
         if (checkboxIDs.length > 0) {
