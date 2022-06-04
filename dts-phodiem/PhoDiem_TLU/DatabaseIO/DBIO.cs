@@ -779,9 +779,6 @@ namespace PhoDiem_TLU.DatabaseIO
                                join studentMark in models.tbl_student_mark
                                on student.id equals studentMark.student_id
 
-                               join person in models.tbl_person
-                               on courseSubject.teacher_id equals person.id
-
                                join subjectExam in models.tbl_subject_exam
                                on studentMark.subject_exam_id equals subjectExam.id
 
@@ -791,10 +788,15 @@ namespace PhoDiem_TLU.DatabaseIO
                                join department in models.tbl_department
                                on enrollmentClass.department_id equals department.id
 
+                               join person in models.tbl_person
+                               on courseSubject.teacher_id equals person.id into coursePer
+                               from p in coursePer.DefaultIfEmpty()
+
                                where semeter.id >= semesterIDStart && semeter.id <= semesterIDEnd
                                && subject.id == subjectID
                                && studentMark.subject_id == subjectID
                                && subjectExam.subject_exam_type_id == subject_exam_type_id
+                               //&& (person.id == courseSubject.teacher_id || courseSubject.teacher_id == null)
 
                                select new
                                {
@@ -804,7 +806,7 @@ namespace PhoDiem_TLU.DatabaseIO
                                    courseSubjectID = courseSubject.id,
                                    courseSubjectName = courseSubject.display_name,
                                    teacherID = courseSubject.teacher_id,
-                                   teacherName = person.display_name,
+                                   teacherName = p == null ? "Không xác định" : p.display_name,
                                    enrollmentClassID = enrollmentClass.id,
                                    enrollmentClassName = enrollmentClass.className,
                                    departmentID = department.id,
@@ -888,7 +890,8 @@ namespace PhoDiem_TLU.DatabaseIO
                                          on student.id equals studentSubjectMark.student_id
 
                                          join person in models.tbl_person
-                                         on courseSubject.teacher_id equals person.id
+                                         on courseSubject.teacher_id equals person.id into coursePer
+                                         from p in coursePer.DefaultIfEmpty()
 
                                          join enrollmentClass in models.tbl_enrollment_class
                                          on student.class_id equals enrollmentClass.id
@@ -909,7 +912,7 @@ namespace PhoDiem_TLU.DatabaseIO
                                              courseSubjectID = courseSubject.id,
                                              courseSubjectName = courseSubject.display_name,
                                              teacherID = courseSubject.teacher_id,
-                                             teacherName = person.display_name,
+                                             teacherName = p == null ? "Không xác định" : p.display_name,
                                              enrollmentClassID = enrollmentClass.id,
                                              enrollmentClassName = enrollmentClass.className,
                                              departmentID = department.id,
@@ -1117,10 +1120,14 @@ namespace PhoDiem_TLU.DatabaseIO
                                          on student.id equals studentMark.student_id
 
                                          join person in models.tbl_person
-                                         on student.id equals person.id
+                                         on student.id equals person.id into studentPer
+                                         from ps in studentPer.DefaultIfEmpty()
+                                         
 
-                                         join personTeacher in models.tbl_person
-                                         on courseSubject.teacher_id equals personTeacher.id
+                                         join personTeacher in models.tbl_person 
+                                         on courseSubject.teacher_id equals personTeacher.id into coursePer
+
+                                         from p in coursePer.DefaultIfEmpty()
 
                                          join subjectExam in models.tbl_subject_exam
                                          on studentMark.subject_exam_id equals subjectExam.id
@@ -1139,13 +1146,13 @@ namespace PhoDiem_TLU.DatabaseIO
                                          select new
                                          {
                                              studentID = student.id,
-                                             studentName = person.display_name,
+                                             studentName = ps == null ? "Không xác định" : ps.display_name,
                                              studentCode = student.student_code,
                                              mark = studentMark.mark,
                                              courseSubjectID = courseSubject.id,
                                              courseSubjectName = courseSubject.display_name,
                                              teacherID = courseSubject.teacher_id,
-                                             teacherName = personTeacher.display_name,
+                                             teacherName = p == null ? "Không xác định" : p.display_name,
                                              enrollmentClassID = enrollmentClass.id,
                                              enrollmentClassName = enrollmentClass.className,
                                              departmentID = department.id,
@@ -1215,7 +1222,8 @@ namespace PhoDiem_TLU.DatabaseIO
                                          on student.id equals person.id
 
                                          join personTeacher in models.tbl_person
-                                         on courseSubject.teacher_id equals personTeacher.id
+                                         on courseSubject.teacher_id equals personTeacher.id into CoursePer
+                                         from p in CoursePer.DefaultIfEmpty()
 
                                          join enrollmentClass in models.tbl_enrollment_class
                                          on student.class_id equals enrollmentClass.id
@@ -1237,7 +1245,7 @@ namespace PhoDiem_TLU.DatabaseIO
                                              courseSubjectID = courseSubject.id,
                                              courseSubjectName = courseSubject.display_name,
                                              teacherID = courseSubject.teacher_id,
-                                             teacherName = personTeacher.display_name,
+                                             teacherName = p == null ? "Không xác định" : p.display_name,
                                              enrollmentClassID = enrollmentClass.id,
                                              enrollmentClassName = enrollmentClass.className,
                                              departmentID = department.id,
